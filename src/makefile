@@ -25,7 +25,7 @@ OBJ = getopt.o getopt1.o makeinfo.o
 
 
 all: $(OBJ)
-	gcc $(OBJ) -o makeinfo $(LINK)
+	gcc $(OBJ) -o mkguide $(LINK)
 
 
 makeinfo.o: makeinfo.c
