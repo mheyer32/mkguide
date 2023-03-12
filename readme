@@ -1,0 +1,29 @@
+Welcome to makeguide 1.54
+
+See the Changes file for changes made to makeinfo since version 1.54
+
+File-List
+
+   doc/
+      Contains the documentation about makeguide
+
+   src/
+      Contains the source of the makeinfo program
+
+   texinfo/
+      Contains texinfo.tex, texinfotimes.tex and amigatexinfo.tex
+
+   makeinfo
+      the makeinfo program, version 1.54
+
+   texindex
+      the texindex program, used to sort Texinfo index files
+
+   COPYING
+      The distribution license for makeinfo
+
+   CHANGES
+      Describes Changes made to makeinfo
+
+   README
+      This file

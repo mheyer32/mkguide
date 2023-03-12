@@ -1,0 +1,43 @@
+Changes since Makeinfo 1.49:
+
+See the makeguide documentation in the doc/ directory for
+more details on the changes.
+
+makeinfo:
+
+- updated to GNU Makeinfo 1.54 (from texinfo 3.0)
+
+- bumped revision to 1.55
+
+- added --amiga-39 option
+
+- added support for bold & italics when --amiga-39 option is specified
+
+- added support for ANSI bold & italics when --amiga-39 --no-headers
+  option is specified
+
+- Index button points to Concept Index (it it exists)
+
+- added localization of strings
+
+- added option to convert spaces in node names in underscores
+
+- added handling for @ character if first character in attribute
+
+texinfo.tex
+
+- updated texinfo.tex to version 2.108 (from texinfo 3.0)
+
+- bumped revision to 2.109
+
+- added localization of strings
+
+- changed wrong settings in @afourpaper (European page style)
+
+- changed some values in titlepage to avoid over-long horizontal lines
+  (when printed in @afourpaper or @smallbook).
+
+
+texinfotimes.tex (based on texinfo.tex version 2.109)
+
+- texinfotimes.tex prints texinfo files using PostScript fonts

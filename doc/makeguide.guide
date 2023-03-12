@@ -1,0 +1,1239 @@
+@database makeguide.guide
+
+@Master makeguide.texi
+
+@Width 72
+
+
+This is the AmigaGuide® file makeguide.guide, produced by Makeinfo-1.55 from 
+the input file makeguide.texi.
+
+   Parts of this file are extracted from the @{b}Texinfo@{ub} manual.
+It documents @{b}makeinfo@{ub}, a program that converts @{b}Texinfo@{ub} files into Info
+and AmigaGuide(R) files.
+
+   Copyright (C) 1993 Reinhard Spisser and Sebastiano Vigna
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be stated in a
+translation approved by the Free Software Foundation.
+
+
+@Node Main "makeguide.guide"
+
+
+
+@{b}makeinfo@{ub}
+********
+
+   This chapter documents the use of the @{b}makeinfo@{ub} program, versions
+1.55 and later. Parts of it are extracted from the @{b}Texinfo@{ub} manual.
+
+
+ @{" Requirements " Link "Requirements"} 
+ @{" Distribution " Link "Distribution"} 
+ @{" Why makeinfo? " Link "Why makeinfo?"} 
+ @{" What is makeinfo " Link "What is makeinfo"} 
+ @{" Amiga specific options " Link "Amiga specific options"} 
+ @{" Texindex " Link "Texindex"} 
+ @{" Known Problems & Bugs " Link "Known Problems & Bugs"} 
+ @{" Differences from GNU makeinfo " Link "Differences from GNU makeinfo"} 
+ @{" Distribution Files " Link "Distribution Files"} 
+ @{" Acknowledgments " Link "Acknowledgments"} 
+ @{" Author Info " Link "Author Info"} 
+ @{" Concept Index " Link "Concept Index"} 
+
+
+@EndNode
+
+@Node "Requirements" "makeguide.guide/Requirements"
+@Next "Distribution"
+@Prev "Main"
+@Toc "Main"
+
+Requirements
+************
+
+   @{b}Makeinfo@{ub} 1.55 runs only with version 2.04 or higher of the operating
+system.
+
+   In order to print the documentation on a printer you need TeX, the
+typesetting language developed by Donald E. Knuth. If you want to use
+@{b}texinfotimes.tex@{ub} you need the Postscript fonts and a TeX able to handle
+Postscript fonts. AmigaTeX by Radical Eye Software handles PostScript
+fonts correctly.
+
+   In order to view the @{i}AmigaGuide@{ui}(R) files, you need to copy the
+@{b}amigaguide.library@{ub} from the @{b}libs@{ub} directory in @{b}libs:@{ub}.
+
+
+@EndNode
+
+@Node "Distribution" "makeguide.guide/Distribution"
+@Next "Why makeinfo?"
+@Prev "Requirements"
+@Toc "Main"
+
+Distribution
+************
+
+   @{b}Makeguide@{ub} is distributed under terms of the GNU copying license.
+Please read the file @{b}COPYING@{ub} contained in this distribution.
+
+   @{b}AmigaGuide@{ub}, @{b}AmigaGuide.info@{ub}, @{b}amigaguide.library@{ub}, @{b}WDisplay@{ub},
+@{b}WDisplay.info@{ub} (C) Copyright 1991-93 Commodore-Amiga, Inc.  All Rights
+Reserved. Reproduced and distributed under license from Commodore.
+
+   AMIGAGUIDE SOFTWARE IS PROVIDED @{i}AS IS@{ui} AND SUBJECT TO CHANGE; NO
+WARRANTIES ARE MADE. ALL USE IS AT YOU OWN RISK. NO LIABILITY OR
+RESPONSIBILITY IS ASSUMED.
+
+
+@EndNode
+
+@Node "Why makeinfo?" "makeguide.guide/Why makeinfo?"
+@Next "What is makeinfo"
+@Prev "Distribution"
+@Toc "Main"
+
+Why makeinfo?
+*************
+
+
+ @{" How it started " Link "How it started"} 
+ @{" What is Texinfo? " Link "What is Texinfo?"} 
+ @{" Output modes " Link "Output modes"} 
+
+
+@EndNode
+
+@Node "How it started" "makeguide.guide/How it started"
+@Next "What is Texinfo?"
+@Toc "Why makeinfo?"
+
+How it started
+==============
+
+   This project started with the idea of bringing to the Amiga
+community a set of tools which would have greatly simplified the
+handling of on-line help as opposed to printed manuals. Currently, the
+Amiga programmer has to keep two separate files which have to be
+updated in parallel. If also some hypertext feature is desired, the
+document writer has to keep a third version of the file.
+
+   This is unbearable. So we began to look around to find a solution of
+this problem. We finally found something that would be sufficient for
+this tasks: it's called @{b}Texinfo@{ub}.
+
+
+@EndNode
+
+@Node "What is Texinfo?" "makeguide.guide/What is Texinfo?"
+@Next "Output modes"
+@Prev "How it started"
+@Toc "Why makeinfo?"
+
+What is @{b}Texinfo@{ub}?
+================
+
+   The GNU people have found a great way of working around the problem
+described in the previous section.
+
+   A @{b}Texinfo@{ub} document is written in a very simple dialect of TeX that
+is easy to learn and use, and it's specifically tailored for the
+creation of technical manuals. @{b}Texinfo@{ub} focuses on logical aspects--so
+the @{b} @t{}@{ub} command, which typesets in fixed width font whatever is in
+the braces, should be never used, and rather replaced with @{b} @code{}@{ub}, @{b}
+@file{}@{ub} or @{b} @key{}@{ub}, depending on the semantics of the text involved.
+This also ensures that each user can customize its @{b}Texinfo@{ub} macros in
+such a way to spot out specific parts of a @{b}Texinfo@{ub} file, or to set a
+different page size, text formatting etc (an example is
+@{b}texinfotimes.tex@{ub} that prints @{b}.texinfo@{ub} with PostScript fonts).
+
+   Of course, the format has to be rich enough to express all the needs
+of a technical manual, and small enough to allow a decent translation
+of all the available constructs to plain ASCII (for an hypotetical
+hypertext viewer).  Also in this respect @{b}Texinfo@{ub} is an excellent
+balance.
+
+   Full documentation is available on how to write a @{b}Texinfo@{ub} document.
+It is written, of course, in @{b}Texinfo@{ub}, and is very clear. You should be
+able to start authoring a @{b}Texinfo@{ub} document in an hour or so. If you're
+used to TeX, ten minutes will suffice. This documentation can be found
+on most @{b}ftp@{ub} sites which have GNU stuff. The latest version of @{b}Texinfo@{ub}
+we know of is 3.0. It's a final, very stable version and the
+differences to the previous version (2.16) are very small (indeed GNU
+identifies the version inside the documentation as 2.18 but the release
+is called 3.0).
+
+
+@EndNode
+
+@Node "Output modes" "makeguide.guide/Output modes"
+@Prev "What is Texinfo?"
+@Toc "Why makeinfo?"
+
+Output modes
+============
+
+   Once a @{b}Texinfo@{ub} document is ready, it can be converted in one of the
+following ways:
+
+  1. It can be passed through TeX using the set of macros @{b}texinfo.tex@{ub}.
+     You will get a beautiful printed manual.
+
+  2. It can be passed through the standard @{b}makeinfo@{ub} in its @{i}Info@{ui} mode;
+     it will generate an @{i}Info@{ui} document (@{i}Info@{ui} is the GNU hypertext
+     reader). This is not much of interest for you.
+
+  3. It can be passed through @{b}makeinfo@{ub} with the @{b}-no-headers@{ub} option; it
+     will generate an almost plain ASCII text file (cross references
+     and indices will still be in @{i}Info@{ui} style).
+
+     But with our version of @{b}makeinfo@{ub},
+
+  4. It can be passed through @{b}makeinfo@{ub} with the @{b}-amiga@{ub} option; it will
+     generate an @{i}AmigaGuide@{ui}(R) document; cross references, menus and
+     indices will become buttons.
+
+  5. It can be passed through @{b}makeinfo@{ub} with the @{b}-amiga -no-headers@{ub}
+     options; it will generate a plain ASCII text file.
+
+  6. It can be passed through @{b}makeinfo@{ub} with the @{b}-amiga-39@{ub} option; it
+     will generate an @{i}AmigaGuide@{ui}(R) V39 document with bold and italics
+     attributes; cross references, menus and indices will become
+     buttons.
+
+  7. It can be passed through @{b}makeinfo@{ub} with the @{b}-amiga-39 -no-headers@{ub}
+     options; it will generate a ASCII text file with ANSI escape
+     sequences for boldface and italics.
+
+
+   See @{"Amiga specific options" Link "Amiga specific options"}, for more details on the Amiga-specific
+features of @{b}makeinfo@{ub}.
+
+   Thus, you have to maintain just a document in order to produce a
+printed manual, on-line hypertext documentation and plain ASCII
+documentation.  @{b}Texinfo@{ub} of course relies on a series of information you
+specify, like menus, cross references, etc., but the amount of work
+you'll need to do this will be very small. It also makes a great job in
+converting to ASCII--for instance, @{b} @emph{}@{ub} text, which comes out
+slanted in the manual, is shown with two asterisk around, the new
+option @{b}-amiga-39@{ub} produces boldface for @{i}AmigaGuide@{ui}(R) 3.0. We would like
+to urge all of the Amiga community programmers, in particular the
+people distributing documentation as a file, to start using @{b}Texinfo@{ub}. It
+will be an enormous quantum leap.
+
+   Since @{b}makeguide@{ub} was first released (July 1992), some Amiga developers
+started to write the documentation in @{b}Texinfo@{ub}; we know of:
+
+   @{b}*@{ub}     @{i}ToolManager@{ui} by Stefan Becker;
+
+   @{b}*@{ub}     @{i}Term@{ui} by Olaf Barthel;
+
+   @{b}*@{ub}     @{i}F-Finder@{ui} by Markus Juani Aalto;
+
+   @{b}*@{ub}     @{i}Cerca@{ui} by Carlo Todeschini;
+
+   @{b}*@{ub}     @{i}Arcalc@{ui} by Roberto Attias;
+
+   @{b}*@{ub}     @{i}SuperDuper, Mostra, Leggi, ne@{ui} (the nice editor) by Sebastiano
+     Vigna;
+
+   @{b}*@{ub}     @{i}Most@{ui} by Uwe Röhm;
+
+   @{b}*@{ub}     @{i}Assigns@{ui} 1.1 by Enrico Fedrigo;
+
+   @{b}*@{ub}     @{i}MegaD 3.0@{ui} (soon to be released);
+
+   @{b}*@{ub}     @{i}Makeguide 1.55@{ui} by Reinhard Spisser and Sebastiano Vigna @{b}8^)@{ub}.
+
+   In addition to this, you can have near @{i}all@{ui} the GNU documentation in
+@{i}AmigaGuide@{ui}(R) format (more than 15MB of @{b}.texi@{ub} files).
+
+
+@EndNode
+
+@Node "What is makeinfo" "makeguide.guide/What is makeinfo"
+@Next "Amiga specific options"
+@Prev "Why makeinfo?"
+@Toc "Main"
+
+What is @{b}makeinfo@{ub}?
+*****************
+
+   This chapter documents the use of the @{b}makeinfo@{ub} program, version
+1.55. It is extracted from the @{b}Texinfo@{ub} manual (with minor
+modifications).
+
+   @{b}makeinfo@{ub} is a program for converting @{b}Texinfo@{ub} files into  @{i}Info@{ui} and
+@{i}AmigaGuide(R)@{ui} files.  @{b}Texinfo@{ub} is a documentation system that uses a
+single source file to produce both on-line information and printed
+output.
+
+   See the @{b}Texinfo@{ub} manual, to learn about the @{b}Texinfo@{ub} documentation
+system.
+
+
+ @{" Formatting Control " Link "Formatting Control"} 
+ @{" Options " Link "Options"} 
+ @{" Pointer Validation " Link "Pointer Validation"} 
+
+
+@EndNode
+
+@Node "Formatting Control" "makeguide.guide/Formatting Control"
+@Next "Options"
+@Toc "What is makeinfo"
+
+Controlling Paragraph Formats
+=============================
+
+   In general, @{b}makeinfo@{ub} @{i}fills@{ui} the paragraphs that it outputs to an @{i}Info@{ui}
+file.  Filling is the process of breaking and connecting lines so that
+lines are the same length as or shorter than the number specified as
+the fill column.  Lines are broken between words.  With @{b}makeinfo@{ub}, you
+can control:
+
+   @{b}*@{ub} The width of each paragraph (the @{i}fill-column@{ui}).
+
+   @{b}*@{ub} The amount of indentation that the first line of each paragraph
+     receives (the @{i}paragraph-indentation@{ui}).
+
+
+@EndNode
+
+@Node "Options" "makeguide.guide/Options"
+@Next "Pointer Validation"
+@Prev "Formatting Control"
+@Toc "What is makeinfo"
+
+Command Line Options
+====================
+
+   The following command line options are available for @{b}makeinfo@{ub}.
+
+@{b}-D @{i}var@{ui}@{ub}
+     Cause @{i}var@{ui} to be defined.  This is equivalent to @{b} @set @{i}var@{ui}@{ub} in the
+     @{b}Texinfo@{ub} file.
+
+@{b}-error-limit @{i}limit@{ui}@{ub}
+     Set the maximum number of errors that @{b}makeinfo@{ub} will report before
+     exiting (on the assumption that continuing would be useless).  The
+     default number of errors that can be reported before @{b}makeinfo@{ub}
+     gives up is 100.
+
+@{b}-fill-column @{i}width@{ui}@{ub}
+     Specify the maximum number of columns in a line; this is the
+     right-hand edge of a line.  Paragraphs that are filled will be
+     filled to this width.  The default value for @{b}fill-column@{ub} is 72.
+
+@{b}-footnote-style @{i}style@{ui}@{ub}
+     Set the footnote style to @{i}style@{ui}, either @{b}end@{ub} for the end node style
+     or @{b}separate@{ub} for the separate node style.  The value set by this
+     option overrides the value set in a @{b}Texinfo@{ub} file by an @{b}
+     @footnotestyle@{ub} command.  When the footnote style is @{b}separate@{ub},
+     @{b}makeinfo@{ub} makes a new node containing the footnotes found in the
+     current node.  When the footnote style is @{b}end@{ub}, @{b}makeinfo@{ub} places the
+     footnote references at the end of the current node.
+
+@{b}-I @{i}dir@{ui}@{ub}
+     Add @{b}dir@{ub} to the directory search list for finding files that are
+     included using the @{b} @include@{ub} command.  By default, @{b}makeinfo@{ub}
+     searches only the current directory.
+
+@{b}-no-headers@{ub}
+     Do not include menus or node lines in the output.  This results in
+     an ASCII file that you cannot read in @{i}Info@{ui} since it does not
+     contain the requisite nodes or menus; but you can print such a
+     file in a single, typewriter-like font and produce acceptable
+     output.
+
+@{b}-no-split@{ub}
+     Suppress the splitting stage of @{b}makeinfo@{ub}.  Normally, large output
+     files (where the size is greater than 70k bytes) are split into
+     smaller subfiles, each one approximately 50k bytes.  If you specify
+     @{b}-no-split@{ub}, @{b}makeinfo@{ub} will not split up the output file.
+
+@{b}-no-pointer-validate@{ub}
+@{b}-no-validate@{ub}
+     Suppress the pointer-validation phase of @{b}makeinfo@{ub}.  Normally,
+     after a @{b}Texinfo@{ub} file is processed, some consistency checks are
+     made to ensure that cross references can be resolved, etc.  See
+     @{"Pointer Validation" Link "Pointer Validation"}.
+
+@{b}-no-warn@{ub}
+     Suppress the output of warning messages.  This does @{i}not@{ui} suppress
+     the output of error messages, only warnings.  You might want this
+     if the file you are creating has examples of @{b}Texinfo@{ub} cross
+     references within it, and the nodes that are referenced do not
+     actually exist.
+
+@{b}-no-number-footnotes@{ub}
+     Supress automatic footnote numbering.  By default, @{b}makeinfo@{ub}
+     numbers each footnote sequentially in a single node, resetting the
+     current footnote number to 1 at the start of each node.
+
+@{b}-output @{i}file@{ui}@{ub}
+@{b}-o @{i}file@{ui}@{ub}
+     Specify that the output should be directed to @{i}file@{ui} and not to the
+     file name specified in the @{b} @setfilename@{ub} command found in the
+     @{b}Texinfo@{ub} source.  @{i}file@{ui} can be the special token @{b}-@{ub}, which specifies
+     standard output.
+
+@{b}-paragraph-indent @{i}indent@{ui}@{ub}
+     Set the paragraph indentation style to @{i}indent@{ui}.  The value set by
+     this option overrides the value set in a @{b}Texinfo@{ub} file by an @{b}
+     @paragraphindent@{ub} command.  The value of @{i}indent@{ui} is interpreted as
+     follows:
+
+        @{b}*@{ub} If the value of @{i}indent@{ui} is @{b}asis@{ub}, do not change the existing
+          indentation at the starts of paragraphs.
+
+        @{b}*@{ub} If the value of @{i}indent@{ui} is zero, delete any existing
+          indentation.
+
+        @{b}*@{ub} If the value of @{i}indent@{ui} is greater than zero, indent each
+          paragraph by that number of spaces.
+
+@{b}-reference-limit @{i}limit@{ui}@{ub}
+     Set the value of the number of references to a node that @{b}makeinfo@{ub}
+     will make without reporting a warning.  If a node has more than
+     this number of references in it, @{b}makeinfo@{ub} will make the references
+     but also report a warning.
+
+@{b}-U @{i}var@{ui}@{ub}
+     Cause @{i}var@{ui} to be undefined.  This is equivalent to @{b} @clear @{i}var@{ui}@{ub} in
+     the @{b}Texinfo@{ub} file.
+
+@{b}-verbose@{ub}
+     Cause @{b}makeinfo@{ub} to display messages saying what it is doing.
+     Normally, @{b}makeinfo@{ub} only outputs messages if there are errors or
+     warnings.
+
+@{b}-version@{ub}
+     Report the version number of this copy of @{b}makeinfo@{ub}.
+
+@{b}-amiga@{ub}
+     Convert the @{b}Texinfo@{ub} file in a @{i}AmigaGuide@{ui}(R) hypertext file.
+
+@{b}-amiga-39@{ub}
+     Convert the @{b}Texinfo@{ub} file in a @{i}AmigaGuide@{ui}(R) V39 hypertext file,
+     with support for italic, boldface and other options. If
+     @{b}-no-headers@{ub} is also specified, @{b}makeinfo@{ub} produces an ASCII file
+     with escape sequences for italic and boldface. See
+     @{"Amiga specific options" Link "Amiga specific options"}.
+
+
+@EndNode
+
+@Node "Pointer Validation" "makeguide.guide/Pointer Validation"
+@Prev "Options"
+@Toc "What is makeinfo"
+
+Pointer Validation
+==================
+
+   If you do not suppress pointer-validation (by using the
+@{b}-no-pointer-validation@{ub} option), @{b}makeinfo@{ub} will check the validity of the
+final @{i}Info@{ui} file.  Mostly, this means ensuring that nodes you have
+referenced really exist.  Here is a complete list of what is checked:
+
+  1. If a `Next', `Previous', or `Up' node reference is a reference to a
+     node in the current file and is not an external reference such as
+     to @{b}(dir)@{ub}, then the referenced node must exist.
+
+  2. In every node, if the `Previous' node is different from the `Up'
+     node, then the `Previous' node must also be pointed to by a `Next'
+     node.
+
+  3. Every node except the `Top' node must have an `Up' pointer.
+
+  4. The node referenced by an `Up' pointer must contain a reference to
+     the current node in some manner other than through a `Next'
+     reference.  This includes menu entries and cross references.
+
+  5. If the `Next' reference of a node is not the same as the `Next'
+     reference of the `Up' reference, then the node referenced by the
+     `Next' pointer must have a `Previous' pointer that points back to
+     the current node.  This rule allows the last node in a section to
+     point to the first node of the next chapter.
+
+
+@EndNode
+
+@Node "Amiga specific options" "makeguide.guide/Amiga specific options"
+@Next "Texindex"
+@Prev "What is makeinfo"
+@Toc "Main"
+
+Amiga specific options
+**********************
+
+   This chapter describes the Amiga specific options that were added to
+@{b}makeinfo@{ub}. See @{"Why makeinfo?" Link "Why makeinfo?"}, how these features were implemented.
+
+
+ @{" Amiga output " Link "Amiga output"} 
+ @{" Localization of strings " Link "Localization of strings"} 
+ @{" Index button " Link "Index button"} 
+ @{" Conversion of spaces in node names " Link "Conversion of spaces in node names"} 
+ @{" Using Postscript fonts " Link "Using Postscript fonts"} 
+
+
+@EndNode
+
+@Node "Amiga output" "makeguide.guide/Amiga output"
+@Next "Localization of strings"
+@Toc "Amiga specific options"
+
+Amiga output
+============
+
+   Two options have been added to the GNU @{b}makeinfo@{ub}:
+
+   @{b}-amiga@{ub} which converts to @{i}AmigaGuide@{ui}(R) V34
+
+   @{b}-amiga-39@{ub} which converts to @{i}AmigaGuide@{ui}(R) V39 (using bold and
+italic).
+
+   When the @{b}-amiga@{ub} and @{b}-no-headers@{ub} options are used, a plain ASCII file
+will be produced.
+
+   When the @{b}-amiga-39@{ub} and @{b}-no-headers@{ub} options are used, @{b}makeinfo@{ub}
+generates ANSI escape control sequences for bold and italics.
+
+
+@EndNode
+
+@Node "Localization of strings" "makeguide.guide/Localization of strings"
+@Next "Index button"
+@Prev "Amiga output"
+@Toc "Amiga specific options"
+
+Localization of strings
+=======================
+
+   Starting with release 2.1 the Amiga Operating system supports
+localization of the user interface. Until now it was not possible to
+localize the hard-coded strings in @{b}makeinfo@{ub} (you had to re-compile
+@{b}makeinfo@{ub}) and @{b}texinfo.tex@{ub}. Recompiling @{b}makeinfo@{ub} needs at least 3.5 MB
+of free RAM space, the GNU C compiler (makeinfo uses a few GNU C 2.0
+features), and a hard disk. Compiling @{b}makeinfo@{ub} on a 68030 took about 10
+minutes (the source is one file over 200KB long). Probably someone
+didn't even like the built-in strings and wanted to replace them.  This
+was a big handicap for people writing documentation in different
+languages than English and wanted to write the documentation in
+@{b}makeinfo@{ub}.
+
+   @{b}makeinfo@{ub} (and @{b}texinfo.tex@{ub}) now supports localization for all
+hardcoded strings. An easy to use way was provided to do this task.
+
+   The localization is done by setting one or more of the following
+variables in your @{b}.Texinfo@{ub} file:
+
+     @set @{i}variable@{ui} @{i}string to translate@{ui}
+
+   where @{i}variable@{ui} could be one of the following:
+
+@{b}xrefstring@{ub}
+     Replace the standard @{b}see@{ub} string that @{b}makeinfo@{ub} and @{b}texinfo.tex@{ub}
+     prints in front of a @{b} @pxref{}@{ub} and @{b} @ref{}@{ub} with the string given
+     as argument.
+
+@{b}Xrefstring@{ub}
+     Replace  the standard @{b}See@{ub} string that @{b}makeinfo@{ub} and @{b}texinfo.tex@{ub}
+     prints in front of a @{b} @xref{}@{ub} with the string given as argument.
+
+@{b}Footnotestring@{ub}
+     Replace the standard @{b}Footnote@{ub} string that @{b}makeinfo@{ub} prints before
+     starting to print the footnotes. This variable has only effect for
+     @{b}makeinfo@{ub}.
+
+@{b}Chapterstring@{ub}
+     Replace  the standard @{b}Chapter@{ub} string that @{b}texinfo.tex@{ub} use for page
+     headings, cross references, and others. This variable has only
+     effect for @{b}texinfo.tex@{ub}.
+
+@{b}Appendixstring@{ub}
+     Replace the standard @{b}Appendix@{ub} string that @{b}texinfo.tex@{ub} use for page
+     headings, cross references, and others. This variable has only
+     effect for @{b}texinfo.tex@{ub}.
+
+@{b}Sectionstring@{ub}
+     Replace  the standard @{b}Section@{ub} string that @{b}texinfo.tex@{ub} use for page
+     headings, cross references, and others. This variable has only
+     effect for @{b}texinfo.tex@{ub}.
+
+@{b}sectionstring@{ub}
+     Replace the standard @{b}section@{ub} string that @{b}texinfo.tex@{ub} use for page
+     headings, cross references, and others.This variable has only
+     effect for @{b}texinfo.tex@{ub}. (this is the section string with the
+     starting @{b}s@{ub} lowercase).
+
+@{b}pagestring@{ub}
+     Replace  the standard @{b}page@{ub} string that @{b}texinfo.tex@{ub} use for page
+     headings, cross references, and others. This variable has only
+     effect for @{b}texinfo.tex@{ub}.
+
+   @{i}Note:@{ui} To undefine the variables, you can't @{b} @set@{ub} them with no
+arguments; if you do so, you set the translation string to an empty
+string. You must use @{b} @unset @{i}variable@{ui}@{ub} to undefine the variable.
+
+   An example:
+
+   To get a different string printed before the cross reference, you
+should add a @{b} @set@{ub} command in your @{b}Texinfo@{ub} file:
+
+     @set xrefstring vedi
+     @set Xrefstring Vedi
+
+   or you can add a define at the @{b}makeinfo@{ub} command line:
+
+   @{b}makeinfo -amiga-39 -D "xrefstring vedi" -D "Xrefstring Vedi" foo.texi@{ub}
+
+   @{i}Note:@{ui} The localization of the strings @{b}xrefstring@{ub} and @{b}Xrefstring@{ub} has
+only effect if you set both variables.
+
+   You may ask: why to implement the localization as variables and not
+as new options? We decided to do so for the following reasons:
+
+   @{b}*@{ub} we wanted to limit the attitional options of @{b}makeinfo@{ub} with respect
+     to the original GNU makeinfo to a minimal number (in effect only
+     for the various versions of @{i}AmigaGuide@{ui}(R));
+
+   @{b}*@{ub} a second reason is that the implementation of localization @{i}via@{ui}
+     options to would have required many more work (it took us about 15
+     minutes to see how to implement it and about 1 minute to implement
+     it);
+
+   @{b}*@{ub} a nice side-effect of this is that you can re-set the strings
+     within the document, allowing you to make a unique multi-language
+     document;
+
+   @{b}*@{ub} since the localization features were also implemented in the macro
+     packages @{b}texinfo.tex@{ub} and @{b}texinfotimes.tex@{ub}, you can use this
+     feature also when printing the @{b}.Texinfo@{ub} file (you can't do this if
+     you specify the translated string as a command line argument of
+     @{b}makeinfo@{ub}). For this reason you should @{b} @set@{ub} the translations
+     in the @{b}.Texinfo@{ub} file;
+
+   @{b}*@{ub} you can specify the translation strings in the @{b}.Texinfo@{ub} file
+     without worrying if the string refers only to @{b}texinfo.tex@{ub} or
+     @{b}makeinfo@{ub}.
+
+   @{b}*@{ub} in other words, we decided to do so because doing it with variables
+     made the localization easier to use and more powerful.
+
+   Example:
+
+      @set xrefstring vedi
+      @set Xrefstring Vedi
+      @xref{Index button,},
+
+   results in
+
+   Vedi @{"Index button" Link "Index button"},
+
+      @set xrefstring Give a nice look at
+      @set Xrefstring Give a proper look at
+      @xref{Index button,},
+
+   results in
+
+   Give a proper look at @{"Index button" Link "Index button"},
+
+   @{i}Remember!@{ui} You have to specify @{i}both@{ui} @{b}xrefstring@{ub} and @{b}Xrefstring@{ub} if you
+want to translate the strings that are printed before a cross
+reference. @{b} @set@{ub}-ting only @{b}xrefstring@{ub} or @{b}Xrefstring@{ub} does have no effect.
+
+   @{i}Note:@{ui} It's more useful if you @{b} @set@{ub} the localization variables in
+the @{b}Texinfo@{ub} document rather than using the @{b}-D@{ub} feature of @{b}makeinfo@{ub},
+because you can also have the same effect on the printed @{b}Texinfo@{ub} files.
+
+   You can @{b} @set@{ub} the variable more than one time in your document; doing
+so you can have pieces of code having different strings. (this because
+the status of the variables is verified when a cross-reference is
+written). This could be very useful when you're writing only one
+@{b}Texinfo@{ub} file containing the documentation in different languages.
+
+
+@EndNode
+
+@Node "Index button" "makeguide.guide/Index button"
+@Next "Conversion of spaces in node names"
+@Prev "Localization of strings"
+@Toc "Amiga specific options"
+
+Index button
+============
+
+   The Index button points to the Concept Index (if the Concept Index
+exists).  This is done by inserting a @{b} @Index Concept Index@{ub} immediatly
+after the beginning of the Concept Index node.
+
+
+@EndNode
+
+@Node "Conversion of spaces in node names" "makeguide.guide/Conversion of spaces in node names"
+@Next "Using Postscript fonts"
+@Prev "Index button"
+@Toc "Amiga specific options"
+
+Conversion of spaces in node names
+==================================
+
+   Since @{i}AmigaGuide@{ui}(R) does not support spaces in node names (when
+trying to get an online help with @{b}SendAmigaGuideCmdA()@{ub}), the spaces are
+converted in underscores if the variable @{i}amiga_convert_nodes@{ui} is set
+(done with @{b} @set amiga_convert_nodes@{ub} in your @{b}Texinfo@{ub} file).
+
+   As with the localization feature of @{b}makeinfo@{ub}, you can @{b} @set@{ub} the
+conversion within the document, you have the same advantages as with the
+localization variables.
+
+
+@EndNode
+
+@Node "Using Postscript fonts" "makeguide.guide/Using Postscript fonts"
+@Prev "Conversion of spaces in node names"
+@Toc "Amiga specific options"
+
+Using Postscript fonts
+======================
+
+   Since we have a TeX on the Amiga that handles correctly and without
+any problem the Adobe Postscript fonts, we decided to make a variation
+of the @{b}texinfo.tex@{ub} macro package that prints the @{b}Texinfo@{ub} files with
+these fonts. Computer Modern roman, italic, oblique and bold is
+substituted by Times roman, Times italic, Times oblique and Times bold.
+The Computer Modern TypeWriter font is substituted by Courier, the
+sans-serif style is substituted by Helvetica (actually @{b}Texinfo@{ub} does not
+use the sans-serif style). The result of this is placed in the file
+@{b}texinfotimes.tex@{ub}.
+
+   To print a @{b}Texinfo@{ub} document with Times fonts, the only thing you
+have to do is to substitute the @{b}\input texinfo@{ub} line at the beginning of
+the @{b}Texinfo@{ub} file with @{b}\input texinfotimes@{ub}. You you need to recompile the
+file with TeX. After recompiling it you can use TeX's previewer to look
+how nice it is or use the printer drivers to print it.
+
+
+@EndNode
+
+@Node "Differences from GNU makeinfo" "makeguide.guide/Differences from GNU makeinfo"
+@Next "Distribution Files"
+@Prev "Known Problems & Bugs"
+@Toc "Main"
+
+Differences from GNU makeinfo
+*****************************
+
+   While we were working on the project, it became clear that much more
+was possible with this new tool. For instance, all of the GNU software
+comes with @{b}Texinfo@{ub} documentation. It was a matter of a couple of
+minutes to make the @{b}Texinfo@{ub} manual (540K!) into an @{i}AmigaGuide@{ui}(R) file
+that we could browse at will, in full @{i}AmigaGuide@{ui}(R) hypertext.
+
+   Every port of this kind has of course some kind of tradeoff. @{i}Info@{ui} and
+@{i}AmigaGuide@{ui}(R) have a rather vaste intersection of features, but both
+have specific features that can't be mimicked on the other side.
+
+   The main design choice at the specification level was that @{i}every@{ui}
+@{b}Texinfo@{ub} should have been convertible to an @{i}AmigaGuide@{ui}(R) file. And that
+@{i}every@{ui} @{b}Texinfo@{ub} file prepared for @{i}AmigaGuide@{ui}(R) should have been
+convertible to @{i}Info@{ui} format (this is essential, e.g., for people doing
+cross-development).
+
+   Fortunately, we were enough lucky: all @{i}Info@{ui} features are translatable
+in @{i}AmigaGuide@{ui}(R) features, except for file splitting; but @{i}AmigaGuide@{ui}(R)
+doesn't load a file entirely--just loads a part of it.  So even a 1
+megabyte document is not a problem for it. @{i}Info@{ui} instead relies on a
+splitting mechanism which is in @{b}makeinfo@{ub}: this mechanism is disabled by
+the options @{b}-amiga@{ub} and @{b}-amiga-39@{ub}.
+
+   There are also a couple of problems with the representation of
+buttons; @{i}Info@{ui} does not have @{i}real@{ui} buttons--it just put in the text
+something of the form @{b}*Note Nodename::@{ub}. Thus, the aspect of a line in
+@{i}Info@{ui} or @{i}AmigaGuide@{ui}(R) is very different. We chose to put in the button
+name only the @{i}real title@{ui} of the button, i.e., the destination node name
+if nothing else is specified, or the second argument of a @{b} @ref@{ub}, @{b} @xref@{ub}
+or @{b} @pxref@{ub} command if available.  Moreover, we noted that the absence
+of @{b}*Note@{ub}'s had made the text a bit unpleasant to read; so we inserted
+@{b}see@{ub} and @{b}See@{ub} whenever @{b}Texinfo@{ub} would have done it in the printed text.
+See @{"Localization of strings" Link "Localization of strings"}, for more detailed information on how
+localize these strings.
+
+   For menus, @{b}Texinfo@{ub} relies on the visualisation of @{i}both@{ui} the button
+name @{i}and@{ui} the destination node name when building indices. Cutting away
+the destination node name would have resulted in a horribly looking
+index. So we decided to preserve the visualization of the destination
+node name after a menu button when building an index. A normal menu
+will instead show just a button.
+
+   Also, we slightly improved an aspect of @{b} @pxref@{ub}. Since no ending
+point was needed before the closing parenthesis, we stripped it off.
+
+   All the features of @{i}Info@{ui} which maps to @{i}AmigaGuide@{ui}(R) have been
+implemented.  Thus, the Top node of a @{b}Texinfo@{ub} document will become the
+Main node of the @{i}AmigaGuide@{ui}(R) file, the @{b} @master@{ub} command will be set
+to the name of the @{b}Texinfo@{ub} file, and the @{b} @width@{ub} command will be set to
+the value @{b}makeinfo@{ub} is using for formatting text. The @{b}Index@{ub} button
+points to the Concept Index (if the Concept Index exists).
+
+   The @{b}-no-headers@{ub} option has now a better behaviour when also @{b}-amiga@{ub}
+is selected. @{b}*Note@{ub}'s are replaced by @{b}see@{ub}, etc..  The result is a
+completely human readable ASCII file. @{b}-no-headers@{ub} in combination with
+@{b}-amiga-39@{ub} generates ASCII files with ANSI escape sequences. See
+@{"Localization of strings" Link "Localization of strings"}, for more detailed information on how localize
+these strings.
+
+
+@EndNode
+
+@Node "Texindex" "makeguide.guide/Texindex"
+@Next "Known Problems & Bugs"
+@Prev "Amiga specific options"
+@Toc "Main"
+
+Texindex
+********
+
+   This chapter explains how to use @{b}texindex@{ub}. It is extraced from the
+@{i}Texinfo@{ui} manual (with small modifications).
+
+   The @{b}tex@{ub} formatting commands itself does not sort the indices; it
+writes an output file of unsorted index data.  This is a misfeature of
+TeX.  Hence, to generate a printed index, you first need a sorted index
+to work from.  The @{b}texindex@{ub} command sorts indices.  (The source file
+@{b}texindex.c@{ub} comes as part of this distribution.)
+
+     Usage: texindex [-k] [-T @{i}tempdir@{ui}] @{i}infile@{ui} [-o @{i}outfile@{ui}] ...
+
+   Each infile arg can optionally be followed by a @{b}-o@{ub} @{i}outfile@{ui} arg; for
+each infile that is not followed by a @{b}-o@{ub} arg, the infile name with @{b}s@{ub}
+(for `sorted') appended is used for the outfile.
+
+   @{b}-T@{ub} dir is the directory to put temp files in, instead of @{b}/tmp@{ub}.
+
+   @{b}-k@{ub} means `keep tempfiles', for debugging.
+
+   The @{b}tex@{ub} formatting command outputs unsorted index files under names
+that obey a standard convention.  These names are the name of your main
+input file to the @{b}tex@{ub} formatting command, with everything after the
+first period thrown away, and the two letter names of indices added at
+the end.  For example, the raw index output files for the input file
+@{b}foo.texinfo@{ub} would be @{b}foo.cp@{ub}, @{b}foo.vr@{ub}, @{b}foo.fn@{ub}, @{b}foo.tp@{ub}, @{b}foo.pg@{ub} and @{b}foo.ky@{ub}.
+Those are exactly the arguments to give to @{b}texindex@{ub}.
+
+   For each file specified, @{b}texindex@{ub} generates a sorted index file
+whose name is made by appending @{b}s@{ub} to the input file name.  The @{b}
+@printindex@{ub} command knows to look for a file of that name.  @{b}texindex@{ub}
+does not alter the raw index output file.
+
+   After you have sorted the indices, you need to rerun the @{b}tex@{ub}
+formatting command on the Texinfo file.  This regenerates a formatted
+DVI file with up-to-date index entries.(1)
+
+   To summarize, this is a three step process:
+
+  1. Run the @{b}tex@{ub} formatting command on the Texinfo file.  This
+     generates the formatted DVI file as well as the raw index files
+     with two letter extensions.
+
+  2. Run the shell command @{b}texindex@{ub} on the raw index files to sort
+     them.  This creates the corresponding sorted index files.
+
+  3. Rerun the @{b}tex@{ub} formatting command on the Texinfo file.  This
+     regenerates a formatted DVI file with the index entries in the
+     correct order.  This second run also corrects the page numbers for
+     the cross references.  (The tables of contents are always correct.)
+
+   You need not run @{b}texindex@{ub} each time after you run the @{b}tex@{ub}
+formatting.  If you do not, on the next run, the @{b}tex@{ub} formatting command
+will use whatever sorted index files happen to exist from the previous
+use of @{b}texindex@{ub}.  This is usually OK while you are debugging.
+
+   ---------- Footnotes ----------
+
+   (1)  If you use more than one index and have cross references to an
+index other than the first, you must run @{b}tex@{ub} @{i}three times@{ui} to get correct
+output: once to generate raw index data; again (after @{b}texindex@{ub}) to
+output the text of the indices and determine their true page numbers;
+and a third time to output correct page numbers in cross references to
+them.  However, cross references to indices are rare.
+
+
+@EndNode
+
+@Node "Known Problems & Bugs" "makeguide.guide/Known Problems & Bugs"
+@Next "Differences from GNU makeinfo"
+@Prev "Texindex"
+@Toc "Main"
+
+Known Problems & Bugs
+*********************
+
+
+ @{" Problems " Link "Problems"} 
+ @{" Bugs " Link "Bugs"} 
+
+
+@EndNode
+
+@Node "Problems" "makeguide.guide/Problems"
+@Next "Bugs"
+@Toc "Known Problems & Bugs"
+
+Problems
+========
+
+   It should be noted that unfortunately @{b}Texinfo@{ub} doesn't have any way of
+specifying a @{i}line@{ui} in a node. So this feature of @{i}AmigaGuide@{ui}(R) is not
+representable in a @{b}Texinfo@{ub} file. This is indeed the biggest drawback of
+using @{b}Texinfo@{ub} for writing @{i}AmigaGuide@{ui}(R) documents. But we feel that the
+advantages are definitely overwhelming.
+
+   Due to the fact that @{i}AmigaGuide@{ui}(R) is rather picky about the
+characters it allows in a button name or in a node name, at least for
+the time being @{b}makeinfo@{ub} has to replace in a node name every slash or
+backslash with a dash and every quotes with a single open quote. Still,
+names with curly braces in them will behave incorrectly. But this is an
+@{i}AmigaGuide@{ui}(R) problem.
+
+   @{i}Note:@{ui} @{b}Texinfo@{ub} doesn't support officially extended or accented
+characters. The workaround, for the time being, is to use ASCII extended
+characters like à, etc. in the text (in place of the various @{b}\`@{ub}, etc.
+commands). @{b}makeinfo@{ub} will process the document flawlessly, and by
+including the @{b}amigatexinfo.tex@{ub} file supplied in this distribution
+archive @{i}before@{ui} @{b}texinfo.tex@{ub} into your document, @{b}Texinfo@{ub} will typeset
+correctly the accented characters (this should work on any TeX system
+which supports TeX 3.0; we tried successfully AmigaTeX and PasTeX).
+Note also that the first (October) release of @{b}makeinfo@{ub} 1.49 had an
+incorrect @{b}amiga.tex@{ub} file, which did not work with many foreign
+characters.
+
+
+@EndNode
+
+@Node "Bugs" "makeguide.guide/Bugs"
+@Prev "Problems"
+@Toc "Known Problems & Bugs"
+
+Bugs
+====
+
+   Finally, we want to describe some bugs we found both in @{b}Texinfo@{ub} and
+@{i}AmigaGuide@{ui}(R), whose knowledge can be helpful.
+
+   @{i}AmigaGuide@{ui}(R) V39 does not handle correctly the @{b} @@{ub} character.  When
+@{i}AmigaGuide@{ui}(R)(R) finds this character in the first column of a line, it
+simply ignores the entire word (this because its commands always have to
+begin in the first column of a line). Due to implementation problems, we
+didn't solve this problem (sorry). @{i}AmigaGuide@{ui}(R) 39 ignores the word
+also if @{b} @@{ub} is the first character in an attribute. So @{b}
+@{b}@section@{ub}@{ub} is ignored. @{b}makeinfo@{ub} puts a space character before
+it, so that the commands are showed. This is only one of the reasons
+why we decided to not support the @{b} @wordwrap@{ub} feature of @{i}AmigaGuide@{ui}(R)
+V39 (with wordwrap the possibility to get a @ command at the first
+column is high, and even this commands are not displayed).  Since the
+wordwrap of @{i}AmigaGuide@{ui}(R) 39 is rather simple, everything different
+than plain text would appeared very bad.
+
+   @{i}AmigaGuide@{ui}(R) 33.1369 doesn't work properly if the name of a button
+contains an apostrophe (@{b}'@{ub}). So you shouldn't use button names
+containing @{b} @code{}@{ub}, @{b} @samp{}@{ub}, etc. (they are always forbidden in node
+names, but you can specify a button name different from the node name
+in an external reference command). The workaround is to not use
+apostrophes in button names (@{i}AmigaGuide@{ui}(R) V34 and V39 doesn't suffer
+from this problem). Since now @{i}AmigaGuide@{ui}(R) V34 is freely
+distributable, you should have no problem upgrading to the new
+versions. The @{b}makeguide@{ub} distribution archive contains the latest
+version of @{i}AmigaGuide@{ui}(R) V34 (version 34.8, dated 3-May-93).
+
+   @{b}Texinfo@{ub} 2.16 and 3.0 will insert an unnamed TOC entry for the Top
+node when the automatic pointer generation feature of @{b}makeinfo@{ub} is used
+(that is, your Top node is defined @{i}via@{ui} @{b} @node Top followed@{ub} by @{b} @top@{ub}).
+You should include the whole Top node in a @{b} @ifinfo/@end ifinfo@{ub} pair
+for the time being.
+
+   @{b}texinfo.tex@{ub} version 2.108 has wrong settings for @{b} @afourpaper@{ub}.  We
+corrected these problems in the version 2.109 (included with this
+archive).
+
+   @{b}makeinfo@{ub} does not sort correctly the index if an entry contains
+formatting commands, like @{b} @code@{ub}. Index entries should be written
+without formatting commands or making different entries for  @{i}Info@{ui} and
+@{b}Texinfo@{ub}. The Index entries of @{b}makeguide.texi@{ub} are written in this way.
+
+
+@EndNode
+
+@Node "Distribution Files" "makeguide.guide/Distribution Files"
+@Next "Acknowledgments"
+@Prev "Differences from GNU makeinfo"
+@Toc "Main"
+
+Distribution Files
+******************
+
+   The archive @{b}mkguide154.lha@{ub} contains the following files:
+
+   In the root directory:
+
+@{b}makeinfo@{ub}
+     The @{b}makeinfo@{ub} program. See @{"What is makeinfo" Link "What is makeinfo"}, for more information
+     how to use it.
+
+@{b}texindex@{ub}
+     Used for sorting the Indexes generated by @{b}Texinfo@{ub} (when compiling
+     it with TeX). You need to run TeX twice to have the Indexes
+     updated. See @{"Texindex" Link "Texindex"}, for more information how to use it.
+
+@{b}COPYING@{ub}
+     The GNU distribution license. @{b}makeguide@{ub} is distributed under this
+     license. Please read it!
+
+@{b}CHANGES@{ub}
+     Changes made to @{b}makeinfo@{ub} since the latest release.
+
+@{b}README@{ub}
+     Read it!
+
+@{b}AmigaGuide@{ub}
+     Utility that displays @{i}AmigaGuide@{ui}(R) documents. You need
+     @{b}amigaguide.library@{ub} in your @{b}libs:@{ub} directory.
+
+   In the @{b}libs@{ub} directory:
+
+@{b}amigaguide.library@{ub}
+     This library contains functions to handle hyper-text documents.
+     You should copy it in your @{b}libs:@{ub} directory in order to work. Use
+     the @{b}AmigaGuide@{ub} utility to display the hypertext documents (e.g.
+     @{b}makeguide.guide@{ub} in the @{b}doc@{ub} directory.
+
+   In the @{b}src@{ub} directory:
+
+@{b}getopt.c@{ub}
+     Support file for @{b}makeinfo@{ub}.
+
+@{b}getopt1.c@{ub}
+     Support file for @{b}makeinfo@{ub}.
+
+@{b}getopt.h@{ub}
+     Support file for @{b}makeinfo@{ub}.
+
+@{b}makeinfo.c@{ub}
+     The source for @{b}makeinfo@{ub}.
+
+@{b}texindex.c@{ub}
+     The source for @{b}texindex@{ub}.
+
+@{b}Makefile@{ub}
+     Makefile to build @{b}makeinfo@{ub}. You need the GNU C compiler to compile
+     it (@{b}makeinfo.c@{ub} uses some features specific to the GNU C compiler).
+     The makefile has options to compile it with Markus Wild's GCC port
+     (actual version 2.3.3) and Davide Pasetto's GCC port (actual
+     version 2.2.2).
+
+   In the @{b}texinfo@{ub} directory:
+
+   This directory contains the macros for use with TeX.
+
+@{b}texinfo.tex@{ub}
+     The macro package that defines the language of Texinfo. You should
+     copy this file in a path where TeX can find it. Version 2.109.
+
+@{b}texinfotimes.tex@{ub}
+     Same as @{b}texinfo.tex@{ub}, but with font descriptions for PostScript. You
+     need the Postscript fonts Times, Helvetica and Courier installed
+     and a TeX able to handle with PostScript fonts. Version 2.109.
+
+@{b}amigatexinfo.tex@{ub}
+     Special file for converting the accents in specific TeX
+     characters. If you use accents in your @{b}.texinfo@{ub} file, you should
+     include this file @{i}before@{ui} @{b}texinfo.tex@{ub} or @{b}texinfotimes.tex@{ub}
+
+   In the @{b}doc@{ub} directory:
+
+@{b}Makeguide.texi@{ub}
+     The documentation of @{b}makeinfo@{ub} in @{b}Texinfo@{ub} format. You can use
+     @{b}makeinfo@{ub} program to convert it to plain ASCII file or to the
+     @{i}AmigaGuide@{ui}(R) hypertext format. See @{"Options" Link "Options"}, to learn more about
+     how to generate output. You can also compile this document with
+     @{b}texinfo.tex@{ub} or @{b}texinfotimes.tex@{ub} to have a nice output on the
+     printer.
+
+@{b}Makeguide.guide@{ub}
+     The documentation of @{b}makeinfo@{ub} in @{i}AmigaGuide@{ui}(R) V39 hypertext
+     format.  Note that @{i}AmigaGuide@{ui}(R) V34 displays this file without
+     problems, since all unrecognized commands and attributes are
+     simply ignored by @{i}AmigaGuide@{ui}(R).
+
+@{b}Makeguide.doc@{ub}
+     The documentation of @{b}makeinfo@{ub} in ASCII with ANSI escape sequences.
+     You need a file-viewer able to handle ANSI escape sequences (like
+     @{b}Leggi@{ub}).
+
+@{b}Makeguide.dvi@{ub}
+     The @{i}Device Independent@{ui} format. You can print it on your printer
+     (with TeX).
+
+@{b}Makeguide.ps@{ub}
+     The documentation in PostScript format. If you print it on a
+     PostScript printer (or on a non-PostScript printer using @{b}post@{ub}),
+     you can see the beautiful output generated by @{b}texinfotimes.tex@{ub}.
+
+@{b}Makefile@{ub}
+     Makefile for generating the various documentation types from the
+     documentation source file @{b}makeguide.texi@{ub}.
+
+
+@EndNode
+
+@Node "Acknowledgments" "makeguide.guide/Acknowledgments"
+@Next "Author Info"
+@Prev "Distribution Files"
+@Toc "Main"
+
+Acknowledgments
+***************
+
+   We would like to thank GNU for the creation of this great
+documentation system and Tom Rokicki for allowing us to distribute the
+@{b}amigatexinfo.tex@{ub} file, which is based on the @{b}amiga.tex@{ub} file supplied in
+the distribution of Radical Eye's AmigaTeX, and for his invaluable
+assistance in adapting @{b}amiga.tex@{ub} to @{b}Texinfo@{ub}.
+
+   Stefan Becker made some very useful suggestions; most of them are now
+implemented in this version of @{b}makeinfo@{ub}; he was also a beta-tester for
+this new version.
+
+
+@EndNode
+
+@Node "Author Info" "makeguide.guide/Author Info"
+@Next "Concept Index"
+@Prev "Acknowledgments"
+@Toc "Main"
+
+Author Info
+***********
+
+   Good @{b}Texinfo@{ub}-ing! Please send any bug report or enhancement request
+to
+
+         Reinhard Spisser
+         Via Licurgo 12
+         I-20162 Milano MI
+     
+         BIX: reinhards@bix.com
+         INTERNET: spisser@ghost.sm.dsi.unimi.it
+                   rein@bliss.st.dsi.unimi.it
+     
+     
+         Sebastiano Vigna
+         Via California 22
+         I-20144 Milano MI
+     
+         BIX: svigna@bix.com
+         INTERNET: vigna@ghost.dsi.unimi.it
+         UUCP: seba@sebamiga.adsp.sub.org
+
+
+@EndNode
+
+@Node "Concept Index" "makeguide.guide/Concept Index"
+@Prev "Author Info"
+@Toc "Main"
+
+Concept Index
+*************
+
+@Index "Concept Index"
+
+
+
+ @{" -error-limit limit " Link "Options"}                   Options
+ @{" -fill-column width " Link "Options"}                   Options
+ @{" -footnote-style style " Link "Options"}                Options
+ @{" -no-headers " Link "Options"}                          Options
+ @{" -no-number-footnotes " Link "Options"}                 Options
+ @{" -no-pointer-validate " Link "Options"}                 Options
+ @{" -no-split " Link "Options"}                            Options
+ @{" -no-validate " Link "Options"}                         Options
+ @{" -no-warn " Link "Options"}                             Options
+ @{" -output file " Link "Options"}                         Options
+ @{" -paragraph-indent indent " Link "Options"}             Options
+ @{" -D var " Link "Options"}                               Options
+ @{" -I dir " Link "Options"}                               Options
+ @{" -o file " Link "Options"}                              Options
+ @{" Acknowledgments " Link "Acknowledgments"}                      Acknowledgments
+ @{" AmigaGuide " Link "Distribution Files"}                           Distribution Files
+ @{" amigaGuide.library " Link "Distribution Files"}                   Distribution Files
+ @{" amigatexinfo.tex " Link "Distribution Files"}                     Distribution Files
+ @{" amiga_convert_nodes " Link "Conversion of spaces in node names"}                  Conversion of spaces in node names
+ @{" Appendixstring " Link "Localization of strings"}                       Localization of strings
+ @{" Author Info " Link "Author Info"}                          Author Info
+ @{" Becker, Stefan " Link "Acknowledgments"}                       Acknowledgments
+ @{" Bugs " Link "Bugs"}                                 Bugs
+ @{" CHANGES " Link "Distribution Files"}                              Distribution Files
+ @{" Chapterstring " Link "Localization of strings"}                        Localization of strings
+ @{" Conversion of node names " Link "Conversion of spaces in node names"}             Conversion of spaces in node names
+ @{" COPYING " Link "Distribution Files"}                              Distribution Files
+ @{" Differences from GNU makeinfo " Link "Differences from GNU makeinfo"}        Differences from GNU makeinfo
+ @{" Distribution " Link "Distribution"}                         Distribution
+ @{" Distribution Files " Link "Distribution Files"}                   Distribution Files
+ @{" Footnotestring " Link "Localization of strings"}                       Localization of strings
+ @{" getopt.c " Link "Distribution Files"}                             Distribution Files
+ @{" getopt.h " Link "Distribution Files"}                             Distribution Files
+ @{" getopt1.c " Link "Distribution Files"}                            Distribution Files
+ @{" GNU " Link "Acknowledgments"}                                  Acknowledgments
+ @{" How it started " Link "How it started"}                       How it started
+ @{" Index button " Link "Index button"}                         Index button
+ @{" Known Problems & Bugs " Link "Known Problems & Bugs"}                Known Problems & Bugs
+ @{" Makefile " Link "Distribution Files"}                             Distribution Files
+ @{" Makefile " Link "Distribution Files"}                             Distribution Files
+ @{" Makeguide.doc " Link "Distribution Files"}                        Distribution Files
+ @{" Makeguide.dvi " Link "Distribution Files"}                        Distribution Files
+ @{" Makeguide.guide " Link "Distribution Files"}                      Distribution Files
+ @{" Makeguide.ps " Link "Distribution Files"}                         Distribution Files
+ @{" Makeguide.texi " Link "Distribution Files"}                       Distribution Files
+ @{" makeinfo " Link "Distribution Files"}                             Distribution Files
+ @{" makeinfo.c " Link "Distribution Files"}                           Distribution Files
+ @{" Output modes " Link "Output modes"}                         Output modes
+ @{" pagestring " Link "Localization of strings"}                           Localization of strings
+ @{" Pointer validation with makeinfo " Link "Pointer Validation"}     Pointer Validation
+ @{" Postscript fonts " Link "Using Postscript fonts"}                     Using Postscript fonts
+ @{" Problems " Link "Problems"}                             Problems
+ @{" README " Link "Distribution Files"}                               Distribution Files
+ @{" Requirements " Link "Requirements"}                         Requirements
+ @{" Rokicki, Tomas " Link "Acknowledgments"}                       Acknowledgments
+ @{" Sectionstring " Link "Localization of strings"}                        Localization of strings
+ @{" sectionstring " Link "Localization of strings"}                        Localization of strings
+ @{" texindex " Link "Texindex"}                             Texindex
+ @{" Texindex " Link "Texindex"}                             Texindex
+ @{" texindex " Link "Distribution Files"}                             Distribution Files
+ @{" texindex.c " Link "Distribution Files"}                           Distribution Files
+ @{" texinfo.tex " Link "Distribution Files"}                          Distribution Files
+ @{" texinfotimes.tex " Link "Using Postscript fonts"}                     Using Postscript fonts
+ @{" texinfotimes.tex " Link "Distribution Files"}                     Distribution Files
+ @{" Using Postscript fonts " Link "Using Postscript fonts"}               Using Postscript fonts
+ @{" Validation of pointers " Link "Pointer Validation"}               Pointer Validation
+ @{" What is Texinfo? " Link "What is Texinfo?"}                     What is Texinfo?
+ @{" Why makeinfo? " Link "Why makeinfo?"}                        Why makeinfo?
+ @{" Xrefstring " Link "Localization of strings"}                           Localization of strings
+ @{" xrefstring " Link "Localization of strings"}                           Localization of strings
+
+@EndNode
+

@@ -1,0 +1,1013 @@
+Parts of this file are extracted from the [1mTexinfo[0m manual.
+It documents [1mmakeinfo[0m, a program that converts [1mTexinfo[0m files into
+Info and AmigaGuide(R) files.
+
+   Copyright (C) 1993 Reinhard Spisser and Sebastiano Vigna
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be stated in a
+translation approved by the Free Software Foundation.
+
+
+
+[1mmakeinfo[0m
+********
+
+   This chapter documents the use of the [1mmakeinfo[0m program, versions
+1.55 and later. Parts of it are extracted from the [1mTexinfo[0m manual.
+
+Requirements
+************
+
+       [1mMakeinfo[0m 1.55 runs only with version 2.04 or higher of the
+operating system.
+
+   In order to print the documentation on a printer you need TeX, the
+typesetting language developed by Donald E. Knuth. If you want to use
+[1mtexinfotimes.tex[0m you need the Postscript fonts and a TeX able to
+handle Postscript fonts. AmigaTeX by Radical Eye Software handles
+PostScript fonts correctly.
+
+   In order to view the [3mAmigaGuide[0m(R) files, you need to copy the
+[1mamigaguide.library[0m from the [1mlibs[0m directory in [1mlibs:[0m.
+
+Distribution
+************
+
+       [1mMakeguide[0m is distributed under terms of the GNU copying
+license. Please read the file [1mCOPYING[0m contained in this distribution.
+
+       [1mAmigaGuide[0m, [1mAmigaGuide.info[0m, [1mamigaguide.library[0m,
+[1mWDisplay[0m, [1mWDisplay.info[0m (C) Copyright 1991-93 Commodore-Amiga,
+Inc.  All Rights Reserved. Reproduced and distributed under license
+from Commodore.
+
+   AMIGAGUIDE SOFTWARE IS PROVIDED [3mAS IS[0m AND SUBJECT TO CHANGE; NO
+WARRANTIES ARE MADE. ALL USE IS AT YOU OWN RISK. NO LIABILITY OR
+RESPONSIBILITY IS ASSUMED.
+
+Why makeinfo?
+*************
+
+How it started
+==============
+
+   This project started with the idea of bringing to the Amiga
+community a set of tools which would have greatly simplified the
+handling of on-line help as opposed to printed manuals. Currently, the
+Amiga programmer has to keep two separate files which have to be
+updated in parallel. If also some hypertext feature is desired, the
+document writer has to keep a third version of the file.
+
+   This is unbearable. So we began to look around to find a solution of
+this problem. We finally found something that would be sufficient for
+this tasks: it's called [1mTexinfo[0m.
+
+What is [1mTexinfo[0m?
+================
+
+   The GNU people have found a great way of working around the problem
+described in the previous section.
+
+   A [1mTexinfo[0m document is written in a very simple dialect of TeX that
+is easy to learn and use, and it's specifically tailored for the
+creation of technical manuals. [1mTexinfo[0m focuses on logical aspects--so
+the [1m@t{}[0m command, which typesets in fixed width font whatever is in
+the braces, should be never used, and rather replaced with [1m@code{}[0m,
+[1m@file{}[0m or [1m@key{}[0m, depending on the semantics of the text involved.
+This also ensures that each user can customize its [1mTexinfo[0m macros in
+such a way to spot out specific parts of a [1mTexinfo[0m file, or to set a
+different page size, text formatting etc (an example is
+[1mtexinfotimes.tex[0m that prints [1m.texinfo[0m with PostScript fonts).
+
+   Of course, the format has to be rich enough to express all the needs
+of a technical manual, and small enough to allow a decent translation
+of all the available constructs to plain ASCII (for an hypotetical
+hypertext viewer).  Also in this respect [1mTexinfo[0m is an excellent
+balance.
+
+   Full documentation is available on how to write a [1mTexinfo[0m
+document. It is written, of course, in [1mTexinfo[0m, and is very clear.
+You should be able to start authoring a [1mTexinfo[0m document in an hour
+or so. If you're used to TeX, ten minutes will suffice. This
+documentation can be found on most [1mftp[0m sites which have GNU stuff.
+The latest version of [1mTexinfo[0m we know of is 3.0. It's a final, very
+stable version and the differences to the previous version (2.16) are
+very small (indeed GNU identifies the version inside the documentation
+as 2.18 but the release is called 3.0).
+
+Output modes
+============
+
+   Once a [1mTexinfo[0m document is ready, it can be converted in one of the
+following ways:
+
+  1. It can be passed through TeX using the set of macros
+     [1mtexinfo.tex[0m. You will get a beautiful printed manual.
+
+  2. It can be passed through the standard [1mmakeinfo[0m in its [3mInfo[0m
+     mode; it will generate an [3mInfo[0m document ([3mInfo[0m is the GNU
+     hypertext reader). This is not much of interest for you.
+
+  3. It can be passed through [1mmakeinfo[0m with the [1m-no-headers[0m option;
+     it will generate an almost plain ASCII text file (cross references
+     and indices will still be in [3mInfo[0m style).
+
+     But with our version of [1mmakeinfo[0m,
+
+  4. It can be passed through [1mmakeinfo[0m with the [1m-amiga[0m option; it
+     will generate an [3mAmigaGuide[0m(R) document; cross references, menus
+     and indices will become buttons.
+
+  5. It can be passed through [1mmakeinfo[0m with the [1m-amiga
+     -no-headers[0m options; it will generate a plain ASCII text file.
+
+  6. It can be passed through [1mmakeinfo[0m with the [1m-amiga-39[0m option;
+     it will generate an [3mAmigaGuide[0m(R) V39 document with bold and
+     italics attributes; cross references, menus and indices will
+     become buttons.
+
+  7. It can be passed through [1mmakeinfo[0m with the [1m-amiga-39
+     -no-headers[0m options; it will generate a ASCII text file with ANSI
+     escape sequences for boldface and italics.
+
+
+   See Amiga specific options, for more details on the Amiga-specific
+features of [1mmakeinfo[0m.
+
+   Thus, you have to maintain just a document in order to produce a
+printed manual, on-line hypertext documentation and plain ASCII
+documentation.  [1mTexinfo[0m of course relies on a series of information
+you specify, like menus, cross references, etc., but the amount of work
+you'll need to do this will be very small. It also makes a great job in
+converting to ASCII--for instance, [1m@emph{}[0m text, which comes out
+slanted in the manual, is shown with two asterisk around, the new
+option [1m-amiga-39[0m produces boldface for [3mAmigaGuide[0m(R) 3.0. We would
+like to urge all of the Amiga community programmers, in particular the
+people distributing documentation as a file, to start using
+[1mTexinfo[0m. It will be an enormous quantum leap.
+
+   Since [1mmakeguide[0m was first released (July 1992), some Amiga
+developers started to write the documentation in [1mTexinfo[0m; we know of:
+
+   * [3mToolManager[0m by Stefan Becker;
+
+   * [3mTerm[0m by Olaf Barthel;
+
+   * [3mF-Finder[0m by Markus Juani Aalto;
+
+   * [3mCerca[0m by Carlo Todeschini;
+
+   * [3mArcalc[0m by Roberto Attias;
+
+   * [3mSuperDuper, Mostra, Leggi, ne[0m (the nice editor) by Sebastiano
+     Vigna;
+
+   * [3mMost[0m by Uwe Röhm;
+
+   * [3mAssigns[0m 1.1 by Enrico Fedrigo;
+
+   * [3mMegaD 3.0[0m (soon to be released);
+
+   * [3mMakeguide 1.55[0m by Reinhard Spisser and Sebastiano Vigna [1m8^)[0m.
+
+   In addition to this, you can have near [3mall[0m the GNU documentation in
+[3mAmigaGuide[0m(R) format (more than 15MB of [1m.texi[0m files).
+
+What is [1mmakeinfo[0m?
+*****************
+
+   This chapter documents the use of the [1mmakeinfo[0m program, version
+1.55. It is extracted from the [1mTexinfo[0m manual (with minor
+modifications).
+
+       [1mmakeinfo[0m is a program for converting [1mTexinfo[0m files into
+[3mInfo[0m and [3mAmigaGuide(R)[0m files.  [1mTexinfo[0m is a documentation system
+that uses a single source file to produce both on-line information and
+printed output.
+
+   See the [1mTexinfo[0m manual, to learn about the [1mTexinfo[0m documentation
+system.
+
+Controlling Paragraph Formats
+=============================
+
+   In general, [1mmakeinfo[0m [3mfills[0m the paragraphs that it outputs to an
+[3mInfo[0m file.  Filling is the process of breaking and connecting lines
+so that lines are the same length as or shorter than the number
+specified as the fill column.  Lines are broken between words.  With
+[1mmakeinfo[0m, you can control:
+
+   * The width of each paragraph (the [3mfill-column[0m).
+
+   * The amount of indentation that the first line of each paragraph
+     receives (the [3mparagraph-indentation[0m).
+
+Command Line Options
+====================
+
+   The following command line options are available for [1mmakeinfo[0m.
+
+[1m-D [3mvar[0m[0m
+     Cause [3mvar[0m to be defined.  This is equivalent to [1m@set [3mvar[0m[0m in
+     the [1mTexinfo[0m file.
+
+[1m-error-limit [3mlimit[0m[0m
+     Set the maximum number of errors that [1mmakeinfo[0m will report
+     before exiting (on the assumption that continuing would be
+     useless).  The default number of errors that can be reported before
+     [1mmakeinfo[0m gives up is 100.
+
+[1m-fill-column [3mwidth[0m[0m
+     Specify the maximum number of columns in a line; this is the
+     right-hand edge of a line.  Paragraphs that are filled will be
+     filled to this width.  The default value for [1mfill-column[0m is 72.
+
+[1m-footnote-style [3mstyle[0m[0m
+     Set the footnote style to [3mstyle[0m, either [1mend[0m for the end node
+     style or [1mseparate[0m for the separate node style.  The value set by
+     this option overrides the value set in a [1mTexinfo[0m file by an
+     [1m@footnotestyle[0m command.  When the footnote style is
+     [1mseparate[0m, [1mmakeinfo[0m makes a new node containing the
+     footnotes found in the current node.  When the footnote style is
+     [1mend[0m, [1mmakeinfo[0m places the footnote references at the end of the
+     current node.
+
+[1m-I [3mdir[0m[0m
+     Add [1mdir[0m to the directory search list for finding files that are
+     included using the [1m@include[0m command.  By default, [1mmakeinfo[0m
+     searches only the current directory.
+
+[1m-no-headers[0m
+     Do not include menus or node lines in the output.  This results in
+     an ASCII file that you cannot read in [3mInfo[0m since it does not
+     contain the requisite nodes or menus; but you can print such a
+     file in a single, typewriter-like font and produce acceptable
+     output.
+
+[1m-no-split[0m
+     Suppress the splitting stage of [1mmakeinfo[0m.  Normally, large
+     output files (where the size is greater than 70k bytes) are split
+     into smaller subfiles, each one approximately 50k bytes.  If you
+     specify [1m-no-split[0m, [1mmakeinfo[0m will not split up the output file.
+
+[1m-no-pointer-validate[0m
+[1m-no-validate[0m
+     Suppress the pointer-validation phase of [1mmakeinfo[0m.  Normally,
+     after a [1mTexinfo[0m file is processed, some consistency checks are
+     made to ensure that cross references can be resolved, etc.  See
+     Pointer Validation.
+
+[1m-no-warn[0m
+     Suppress the output of warning messages.  This does [3mnot[0m suppress
+     the output of error messages, only warnings.  You might want this
+     if the file you are creating has examples of [1mTexinfo[0m cross
+     references within it, and the nodes that are referenced do not
+     actually exist.
+
+[1m-no-number-footnotes[0m
+     Supress automatic footnote numbering.  By default, [1mmakeinfo[0m
+     numbers each footnote sequentially in a single node, resetting the
+     current footnote number to 1 at the start of each node.
+
+[1m-output [3mfile[0m[0m
+[1m-o [3mfile[0m[0m
+     Specify that the output should be directed to [3mfile[0m and not to the
+     file name specified in the [1m@setfilename[0m command found in the
+     [1mTexinfo[0m source.  [3mfile[0m can be the special token [1m-[0m, which
+     specifies standard output.
+
+[1m-paragraph-indent [3mindent[0m[0m
+     Set the paragraph indentation style to [3mindent[0m.  The value set by
+     this option overrides the value set in a [1mTexinfo[0m file by an
+     [1m@paragraphindent[0m command.  The value of [3mindent[0m is
+     interpreted as follows:
+
+        * If the value of [3mindent[0m is [1masis[0m, do not change the
+          existing indentation at the starts of paragraphs.
+
+        * If the value of [3mindent[0m is zero, delete any existing
+          indentation.
+
+        * If the value of [3mindent[0m is greater than zero, indent each
+          paragraph by that number of spaces.
+
+[1m-reference-limit [3mlimit[0m[0m
+     Set the value of the number of references to a node that
+     [1mmakeinfo[0m will make without reporting a warning.  If a node
+     has more than this number of references in it, [1mmakeinfo[0m will
+     make the references but also report a warning.
+
+[1m-U [3mvar[0m[0m
+     Cause [3mvar[0m to be undefined.  This is equivalent to [1m@clear
+     [3mvar[0m[0m in the [1mTexinfo[0m file.
+
+[1m-verbose[0m
+     Cause [1mmakeinfo[0m to display messages saying what it is doing.
+     Normally, [1mmakeinfo[0m only outputs messages if there are errors or
+     warnings.
+
+[1m-version[0m
+     Report the version number of this copy of [1mmakeinfo[0m.
+
+[1m-amiga[0m
+     Convert the [1mTexinfo[0m file in a [3mAmigaGuide[0m(R) hypertext file.
+
+[1m-amiga-39[0m
+     Convert the [1mTexinfo[0m file in a [3mAmigaGuide[0m(R) V39 hypertext
+     file, with support for italic, boldface and other options. If
+     [1m-no-headers[0m is also specified, [1mmakeinfo[0m produces an ASCII
+     file with escape sequences for italic and boldface. See Amiga
+     specific options.
+
+Pointer Validation
+==================
+
+   If you do not suppress pointer-validation (by using the
+[1m-no-pointer-validation[0m option), [1mmakeinfo[0m will check the
+validity of the final [3mInfo[0m file.  Mostly, this means ensuring that
+nodes you have referenced really exist.  Here is a complete list of
+what is checked:
+
+  1. If a `Next', `Previous', or `Up' node reference is a reference to a
+     node in the current file and is not an external reference such as
+     to [1m(dir)[0m, then the referenced node must exist.
+
+  2. In every node, if the `Previous' node is different from the `Up'
+     node, then the `Previous' node must also be pointed to by a `Next'
+     node.
+
+  3. Every node except the `Top' node must have an `Up' pointer.
+
+  4. The node referenced by an `Up' pointer must contain a reference to
+     the current node in some manner other than through a `Next'
+     reference.  This includes menu entries and cross references.
+
+  5. If the `Next' reference of a node is not the same as the `Next'
+     reference of the `Up' reference, then the node referenced by the
+     `Next' pointer must have a `Previous' pointer that points back to
+     the current node.  This rule allows the last node in a section to
+     point to the first node of the next chapter.
+
+Amiga specific options
+**********************
+
+   This chapter describes the Amiga specific options that were added to
+[1mmakeinfo[0m. See Why makeinfo?, how these features were implemented.
+
+Amiga output
+============
+
+   Two options have been added to the GNU [1mmakeinfo[0m:
+
+       [1m-amiga[0m which converts to [3mAmigaGuide[0m(R) V34
+
+       [1m-amiga-39[0m which converts to [3mAmigaGuide[0m(R) V39 (using bold
+and italic).
+
+   When the [1m-amiga[0m and [1m-no-headers[0m options are used, a plain ASCII
+file will be produced.
+
+   When the [1m-amiga-39[0m and [1m-no-headers[0m options are used,
+[1mmakeinfo[0m generates ANSI escape control sequences for bold and
+italics.
+
+Localization of strings
+=======================
+
+   Starting with release 2.1 the Amiga Operating system supports
+localization of the user interface. Until now it was not possible to
+localize the hard-coded strings in [1mmakeinfo[0m (you had to re-compile
+[1mmakeinfo[0m) and [1mtexinfo.tex[0m. Recompiling [1mmakeinfo[0m needs at least
+3.5 MB of free RAM space, the GNU C compiler (makeinfo uses a few GNU C
+2.0 features), and a hard disk. Compiling [1mmakeinfo[0m on a 68030 took
+about 10 minutes (the source is one file over 200KB long). Probably
+someone didn't even like the built-in strings and wanted to replace
+them.  This was a big handicap for people writing documentation in
+different languages than English and wanted to write the documentation
+in [1mmakeinfo[0m.
+
+       [1mmakeinfo[0m (and [1mtexinfo.tex[0m) now supports localization for all
+hardcoded strings. An easy to use way was provided to do this task.
+
+   The localization is done by setting one or more of the following
+variables in your [1m.Texinfo[0m file:
+
+     @set [3mvariable[0m [3mstring to translate[0m
+
+   where [3mvariable[0m could be one of the following:
+
+[1mxrefstring[0m
+     Replace the standard [1msee[0m string that [1mmakeinfo[0m and
+     [1mtexinfo.tex[0m prints in front of a [1m@pxref{}[0m and [1m@ref{}[0m
+     with the string given as argument.
+
+[1mXrefstring[0m
+     Replace  the standard [1mSee[0m string that [1mmakeinfo[0m and
+     [1mtexinfo.tex[0m prints in front of a [1m@xref{}[0m with the string
+     given as argument.
+
+[1mFootnotestring[0m
+     Replace the standard [1mFootnote[0m string that [1mmakeinfo[0m prints
+     before starting to print the footnotes. This variable has only
+     effect for [1mmakeinfo[0m.
+
+[1mChapterstring[0m
+     Replace  the standard [1mChapter[0m string that [1mtexinfo.tex[0m use for
+     page headings, cross references, and others. This variable has only
+     effect for [1mtexinfo.tex[0m.
+
+[1mAppendixstring[0m
+     Replace the standard [1mAppendix[0m string that [1mtexinfo.tex[0m use for
+     page headings, cross references, and others. This variable has only
+     effect for [1mtexinfo.tex[0m.
+
+[1mSectionstring[0m
+     Replace  the standard [1mSection[0m string that [1mtexinfo.tex[0m use for
+     page headings, cross references, and others. This variable has only
+     effect for [1mtexinfo.tex[0m.
+
+[1msectionstring[0m
+     Replace the standard [1msection[0m string that [1mtexinfo.tex[0m use for
+     page headings, cross references, and others.This variable has only
+     effect for [1mtexinfo.tex[0m. (this is the section string with the
+     starting [1ms[0m lowercase).
+
+[1mpagestring[0m
+     Replace  the standard [1mpage[0m string that [1mtexinfo.tex[0m use for page
+     headings, cross references, and others. This variable has only
+     effect for [1mtexinfo.tex[0m.
+
+       [3mNote:[0m To undefine the variables, you can't [1m@set[0m them with no
+arguments; if you do so, you set the translation string to an empty
+string. You must use [1m@unset [3mvariable[0m[0m to undefine the variable.
+
+   An example:
+
+   To get a different string printed before the cross reference, you
+should add a [1m@set[0m command in your [1mTexinfo[0m file:
+
+     @set xrefstring vedi
+     @set Xrefstring Vedi
+
+   or you can add a define at the [1mmakeinfo[0m command line:
+
+       [1mmakeinfo -amiga-39 -D "xrefstring vedi" -D "Xrefstring Vedi"
+foo.texi[0m
+
+       [3mNote:[0m The localization of the strings [1mxrefstring[0m and
+[1mXrefstring[0m has only effect if you set both variables.
+
+   You may ask: why to implement the localization as variables and not
+as new options? We decided to do so for the following reasons:
+
+   * we wanted to limit the attitional options of [1mmakeinfo[0m with
+     respect to the original GNU makeinfo to a minimal number (in
+     effect only for the various versions of [3mAmigaGuide[0m(R));
+
+   * a second reason is that the implementation of localization
+     [3mvia[0m options to would have required many more work (it took
+     us about 15 minutes to see how to implement it and about 1 minute
+     to implement it);
+
+   * a nice side-effect of this is that you can re-set the strings
+     within the document, allowing you to make a unique multi-language
+     document;
+
+   * since the localization features were also implemented in the macro
+     packages [1mtexinfo.tex[0m and [1mtexinfotimes.tex[0m, you can use this
+     feature also when printing the [1m.Texinfo[0m file (you can't do this
+     if you specify the translated string as a command line argument of
+     [1mmakeinfo[0m). For this reason you should [1m@set[0m the translations in
+     the [1m.Texinfo[0m file;
+
+   * you can specify the translation strings in the [1m.Texinfo[0m file
+     without worrying if the string refers only to [1mtexinfo.tex[0m or
+     [1mmakeinfo[0m.
+
+   * in other words, we decided to do so because doing it with variables
+     made the localization easier to use and more powerful.
+
+   Example:
+
+      @set xrefstring vedi
+      @set Xrefstring Vedi
+      @xref{Index button,},
+
+   results in
+
+   Vedi Index button,
+
+      @set xrefstring Give a nice look at
+      @set Xrefstring Give a proper look at
+      @xref{Index button,},
+
+   results in
+
+   Give a proper look at Index button,
+
+       [3mRemember![0m You have to specify [3mboth[0m [1mxrefstring[0m and
+[1mXrefstring[0m if you want to translate the strings that are printed
+before a cross reference. [1m@set[0m-ting only [1mxrefstring[0m or
+[1mXrefstring[0m does have no effect.
+
+       [3mNote:[0m It's more useful if you [1m@set[0m the localization
+variables in the [1mTexinfo[0m document rather than using the [1m-D[0m feature
+of [1mmakeinfo[0m, because you can also have the same effect on the printed
+[1mTexinfo[0m files.
+
+   You can [1m@set[0m the variable more than one time in your document;
+doing so you can have pieces of code having different strings. (this
+because the status of the variables is verified when a cross-reference
+is written). This could be very useful when you're writing only one
+[1mTexinfo[0m file containing the documentation in different languages.
+
+Index button
+============
+
+   The Index button points to the Concept Index (if the Concept Index
+exists).  This is done by inserting a [1m@Index Concept Index[0m immediatly
+after the beginning of the Concept Index node.
+
+Conversion of spaces in node names
+==================================
+
+   Since [3mAmigaGuide[0m(R) does not support spaces in node names (when
+trying to get an online help with [1mSendAmigaGuideCmdA()[0m), the spaces
+are converted in underscores if the variable [3mamiga_convert_nodes[0m is
+set (done with [1m@set amiga_convert_nodes[0m in your [1mTexinfo[0m file).
+
+   As with the localization feature of [1mmakeinfo[0m, you can [1m@set[0m the
+conversion within the document, you have the same advantages as with the
+localization variables.
+
+Using Postscript fonts
+======================
+
+   Since we have a TeX on the Amiga that handles correctly and without
+any problem the Adobe Postscript fonts, we decided to make a variation
+of the [1mtexinfo.tex[0m macro package that prints the [1mTexinfo[0m files with
+these fonts. Computer Modern roman, italic, oblique and bold is
+substituted by Times roman, Times italic, Times oblique and Times bold.
+The Computer Modern TypeWriter font is substituted by Courier, the
+sans-serif style is substituted by Helvetica (actually [1mTexinfo[0m does
+not use the sans-serif style). The result of this is placed in the file
+[1mtexinfotimes.tex[0m.
+
+   To print a [1mTexinfo[0m document with Times fonts, the only thing you
+have to do is to substitute the [1m\input texinfo[0m line at the beginning
+of the [1mTexinfo[0m file with [1m\input texinfotimes[0m. You you need to
+recompile the file with TeX. After recompiling it you can use TeX's
+previewer to look how nice it is or use the printer drivers to print it.
+
+Differences from GNU makeinfo
+*****************************
+
+   While we were working on the project, it became clear that much more
+was possible with this new tool. For instance, all of the GNU software
+comes with [1mTexinfo[0m documentation. It was a matter of a couple of
+minutes to make the [1mTexinfo[0m manual (540K!) into an [3mAmigaGuide[0m(R)
+file that we could browse at will, in full [3mAmigaGuide[0m(R) hypertext.
+
+   Every port of this kind has of course some kind of tradeoff.
+[3mInfo[0m and [3mAmigaGuide[0m(R) have a rather vaste intersection of
+features, but both have specific features that can't be mimicked on the
+other side.
+
+   The main design choice at the specification level was that
+[3mevery[0m [1mTexinfo[0m should have been convertible to an
+[3mAmigaGuide[0m(R) file. And that [3mevery[0m [1mTexinfo[0m file prepared for
+[3mAmigaGuide[0m(R) should have been convertible to [3mInfo[0m format (this is
+essential, e.g., for people doing cross-development).
+
+   Fortunately, we were enough lucky: all [3mInfo[0m features are
+translatable in [3mAmigaGuide[0m(R) features, except for file splitting; but
+[3mAmigaGuide[0m(R) doesn't load a file entirely--just loads a part of it.
+So even a 1 megabyte document is not a problem for it. [3mInfo[0m instead
+relies on a splitting mechanism which is in [1mmakeinfo[0m: this mechanism
+is disabled by the options [1m-amiga[0m and [1m-amiga-39[0m.
+
+   There are also a couple of problems with the representation of
+buttons; [3mInfo[0m does not have [3mreal[0m buttons--it just put in the text
+something of the form [1m*Note Nodename::[0m. Thus, the aspect of a line in
+[3mInfo[0m or [3mAmigaGuide[0m(R) is very different. We chose to put in the
+button name only the [3mreal title[0m of the button, i.e., the destination
+node name if nothing else is specified, or the second argument of a
+[1m@ref[0m, [1m@xref[0m or [1m@pxref[0m command if available.  Moreover, we noted
+that the absence of [1m*Note[0m's had made the text a bit unpleasant to
+read; so we inserted [1msee[0m and [1mSee[0m whenever [1mTexinfo[0m would have done
+it in the printed text. See Localization of strings, for more detailed
+information on how localize these strings.
+
+   For menus, [1mTexinfo[0m relies on the visualisation of [3mboth[0m the button
+name [3mand[0m the destination node name when building indices. Cutting
+away the destination node name would have resulted in a horribly looking
+index. So we decided to preserve the visualization of the destination
+node name after a menu button when building an index. A normal menu
+will instead show just a button.
+
+   Also, we slightly improved an aspect of [1m@pxref[0m. Since no ending
+point was needed before the closing parenthesis, we stripped it off.
+
+   All the features of [3mInfo[0m which maps to [3mAmigaGuide[0m(R) have been
+implemented.  Thus, the Top node of a [1mTexinfo[0m document will become
+the Main node of the [3mAmigaGuide[0m(R) file, the [1m@master[0m command will
+be set to the name of the [1mTexinfo[0m file, and the [1m@width[0m command will
+be set to the value [1mmakeinfo[0m is using for formatting text. The
+[1mIndex[0m button points to the Concept Index (if the Concept Index
+exists).
+
+   The [1m-no-headers[0m option has now a better behaviour when also
+[1m-amiga[0m is selected. [1m*Note[0m's are replaced by [1msee[0m, etc..  The
+result is a completely human readable ASCII file. [1m-no-headers[0m in
+combination with [1m-amiga-39[0m generates ASCII files with ANSI escape
+sequences. See Localization of strings, for more detailed information on
+how localize these strings.
+
+Texindex
+********
+
+   This chapter explains how to use [1mtexindex[0m. It is extraced from the
+[3mTexinfo[0m manual (with small modifications).
+
+   The [1mtex[0m formatting commands itself does not sort the indices; it
+writes an output file of unsorted index data.  This is a misfeature of
+TeX.  Hence, to generate a printed index, you first need a sorted index
+to work from.  The [1mtexindex[0m command sorts indices.  (The source file
+[1mtexindex.c[0m comes as part of this distribution.)
+
+     Usage: texindex [-k] [-T [3mtempdir[0m] [3minfile[0m [-o [3moutfile[0m] ...
+
+   Each infile arg can optionally be followed by a [1m-o[0m [3moutfile[0m arg;
+for each infile that is not followed by a [1m-o[0m arg, the infile name
+with [1ms[0m (for `sorted') appended is used for the outfile.
+
+       [1m-T[0m dir is the directory to put temp files in, instead of
+[1m/tmp[0m.
+
+       [1m-k[0m means `keep tempfiles', for debugging.
+
+   The [1mtex[0m formatting command outputs unsorted index files under
+names that obey a standard convention.  These names are the name of
+your main input file to the [1mtex[0m formatting command, with everything
+after the first period thrown away, and the two letter names of indices
+added at the end.  For example, the raw index output files for the
+input file [1mfoo.texinfo[0m would be [1mfoo.cp[0m, [1mfoo.vr[0m, [1mfoo.fn[0m,
+[1mfoo.tp[0m, [1mfoo.pg[0m and [1mfoo.ky[0m.  Those are exactly the arguments
+to give to [1mtexindex[0m.
+
+   For each file specified, [1mtexindex[0m generates a sorted index file
+whose name is made by appending [1ms[0m to the input file name.  The
+[1m@printindex[0m command knows to look for a file of that name.
+[1mtexindex[0m does not alter the raw index output file.
+
+   After you have sorted the indices, you need to rerun the [1mtex[0m
+formatting command on the Texinfo file.  This regenerates a formatted
+DVI file with up-to-date index entries.(1)
+
+   To summarize, this is a three step process:
+
+  1. Run the [1mtex[0m formatting command on the Texinfo file.  This
+     generates the formatted DVI file as well as the raw index files
+     with two letter extensions.
+
+  2. Run the shell command [1mtexindex[0m on the raw index files to sort
+     them.  This creates the corresponding sorted index files.
+
+  3. Rerun the [1mtex[0m formatting command on the Texinfo file.  This
+     regenerates a formatted DVI file with the index entries in the
+     correct order.  This second run also corrects the page numbers for
+     the cross references.  (The tables of contents are always correct.)
+
+   You need not run [1mtexindex[0m each time after you run the [1mtex[0m
+formatting.  If you do not, on the next run, the [1mtex[0m formatting
+command will use whatever sorted index files happen to exist from the
+previous use of [1mtexindex[0m.  This is usually OK while you are debugging.
+
+   ---------- Footnotes ----------
+
+   (1)  If you use more than one index and have cross references to an
+index other than the first, you must run [1mtex[0m [3mthree times[0m to get
+correct output: once to generate raw index data; again (after
+[1mtexindex[0m) to output the text of the indices and determine their
+true page numbers; and a third time to output correct page numbers in
+cross references to them.  However, cross references to indices are
+rare.
+
+Known Problems & Bugs
+*********************
+
+Problems
+========
+
+   It should be noted that unfortunately [1mTexinfo[0m doesn't have any way
+of specifying a [3mline[0m in a node. So this feature of [3mAmigaGuide[0m(R) is
+not representable in a [1mTexinfo[0m file. This is indeed the biggest
+drawback of using [1mTexinfo[0m for writing [3mAmigaGuide[0m(R) documents. But
+we feel that the advantages are definitely overwhelming.
+
+   Due to the fact that [3mAmigaGuide[0m(R) is rather picky about the
+characters it allows in a button name or in a node name, at least for
+the time being [1mmakeinfo[0m has to replace in a node name every slash or
+backslash with a dash and every quotes with a single open quote. Still,
+names with curly braces in them will behave incorrectly. But this is an
+[3mAmigaGuide[0m(R) problem.
+
+       [3mNote:[0m [1mTexinfo[0m doesn't support officially extended or accented
+characters. The workaround, for the time being, is to use ASCII extended
+characters like à, etc. in the text (in place of the various [1m\`[0m, etc.
+commands). [1mmakeinfo[0m will process the document flawlessly, and by
+including the [1mamigatexinfo.tex[0m file supplied in this distribution
+archive [3mbefore[0m [1mtexinfo.tex[0m into your document, [1mTexinfo[0m will
+typeset correctly the accented characters (this should work on any TeX
+system which supports TeX 3.0; we tried successfully AmigaTeX and
+PasTeX). Note also that the first (October) release of [1mmakeinfo[0m 1.49
+had an incorrect [1mamiga.tex[0m file, which did not work with many foreign
+characters.
+
+Bugs
+====
+
+   Finally, we want to describe some bugs we found both in [1mTexinfo[0m and
+[3mAmigaGuide[0m(R), whose knowledge can be helpful.
+
+       [3mAmigaGuide[0m(R) V39 does not handle correctly the [1m@[0m character.
+When [3mAmigaGuide[0m(R)(R) finds this character in the first column of a
+line, it simply ignores the entire word (this because its commands
+always have to begin in the first column of a line). Due to
+implementation problems, we didn't solve this problem (sorry).
+[3mAmigaGuide[0m(R) 39 ignores the word also if [1m@[0m is the first
+character in an attribute. So [1m@{b}@section@{ub}[0m is ignored.
+[1mmakeinfo[0m puts a space character before it, so that the commands
+are showed. This is only one of the reasons why we decided to not
+support the [1m@wordwrap[0m feature of [3mAmigaGuide[0m(R) V39 (with wordwrap
+the possibility to get a @ command at the first column is high, and
+even this commands are not displayed).  Since the wordwrap of
+[3mAmigaGuide[0m(R) 39 is rather simple, everything different than
+plain text would appeared very bad.
+
+       [3mAmigaGuide[0m(R) 33.1369 doesn't work properly if the name of a
+button contains an apostrophe ([1m'[0m). So you shouldn't use button names
+containing [1m@code{}[0m, [1m@samp{}[0m, etc. (they are always forbidden in
+node names, but you can specify a button name different from the node
+name in an external reference command). The workaround is to not use
+apostrophes in button names ([3mAmigaGuide[0m(R) V34 and V39 doesn't suffer
+from this problem). Since now [3mAmigaGuide[0m(R) V34 is freely
+distributable, you should have no problem upgrading to the new
+versions. The [1mmakeguide[0m distribution archive contains the latest
+version of [3mAmigaGuide[0m(R) V34 (version 34.8, dated 3-May-93).
+
+       [1mTexinfo[0m 2.16 and 3.0 will insert an unnamed TOC entry for the
+Top node when the automatic pointer generation feature of [1mmakeinfo[0m is
+used (that is, your Top node is defined [3mvia[0m [1m@node Top followed[0m by
+[1m@top[0m). You should include the whole Top node in a [1m@ifinfo/@end
+ifinfo[0m pair for the time being.
+
+       [1mtexinfo.tex[0m version 2.108 has wrong settings for
+[1m@afourpaper[0m.  We corrected these problems in the version 2.109
+(included with this archive).
+
+       [1mmakeinfo[0m does not sort correctly the index if an entry contains
+formatting commands, like [1m@code[0m. Index entries should be written
+without formatting commands or making different entries for  [3mInfo[0m and
+[1mTexinfo[0m. The Index entries of [1mmakeguide.texi[0m are written in this
+way.
+
+Distribution Files
+******************
+
+   The archive [1mmkguide154.lha[0m contains the following files:
+
+   In the root directory:
+
+[1mmakeinfo[0m
+     The [1mmakeinfo[0m program. See What is makeinfo, for more information
+     how to use it.
+
+[1mtexindex[0m
+     Used for sorting the Indexes generated by [1mTexinfo[0m (when
+     compiling it with TeX). You need to run TeX twice to have the
+     Indexes updated. See Texindex, for more information how to use it.
+
+[1mCOPYING[0m
+     The GNU distribution license. [1mmakeguide[0m is distributed under this
+     license. Please read it!
+
+[1mCHANGES[0m
+     Changes made to [1mmakeinfo[0m since the latest release.
+
+[1mREADME[0m
+     Read it!
+
+[1mAmigaGuide[0m
+     Utility that displays [3mAmigaGuide[0m(R) documents. You need
+     [1mamigaguide.library[0m in your [1mlibs:[0m directory.
+
+   In the [1mlibs[0m directory:
+
+[1mamigaguide.library[0m
+     This library contains functions to handle hyper-text documents.
+     You should copy it in your [1mlibs:[0m directory in order to work. Use
+     the [1mAmigaGuide[0m utility to display the hypertext documents (e.g.
+     [1mmakeguide.guide[0m in the [1mdoc[0m directory.
+
+   In the [1msrc[0m directory:
+
+[1mgetopt.c[0m
+     Support file for [1mmakeinfo[0m.
+
+[1mgetopt1.c[0m
+     Support file for [1mmakeinfo[0m.
+
+[1mgetopt.h[0m
+     Support file for [1mmakeinfo[0m.
+
+[1mmakeinfo.c[0m
+     The source for [1mmakeinfo[0m.
+
+[1mtexindex.c[0m
+     The source for [1mtexindex[0m.
+
+[1mMakefile[0m
+     Makefile to build [1mmakeinfo[0m. You need the GNU C compiler to
+     compile it ([1mmakeinfo.c[0m uses some features specific to the GNU C
+     compiler). The makefile has options to compile it with Markus
+     Wild's GCC port (actual version 2.3.3) and Davide Pasetto's GCC
+     port (actual version 2.2.2).
+
+   In the [1mtexinfo[0m directory:
+
+   This directory contains the macros for use with TeX.
+
+[1mtexinfo.tex[0m
+     The macro package that defines the language of Texinfo. You should
+     copy this file in a path where TeX can find it. Version 2.109.
+
+[1mtexinfotimes.tex[0m
+     Same as [1mtexinfo.tex[0m, but with font descriptions for PostScript.
+     You need the Postscript fonts Times, Helvetica and Courier
+     installed and a TeX able to handle with PostScript fonts. Version
+     2.109.
+
+[1mamigatexinfo.tex[0m
+     Special file for converting the accents in specific TeX
+     characters. If you use accents in your [1m.texinfo[0m file, you should
+     include this file [3mbefore[0m [1mtexinfo.tex[0m or [1mtexinfotimes.tex[0m
+
+   In the [1mdoc[0m directory:
+
+[1mMakeguide.texi[0m
+     The documentation of [1mmakeinfo[0m in [1mTexinfo[0m format. You can use
+     [1mmakeinfo[0m program to convert it to plain ASCII file or to the
+     [3mAmigaGuide[0m(R) hypertext format. See Options, to learn more about
+     how to generate output. You can also compile this document with
+     [1mtexinfo.tex[0m or [1mtexinfotimes.tex[0m to have a nice output on the
+     printer.
+
+[1mMakeguide.guide[0m
+     The documentation of [1mmakeinfo[0m in [3mAmigaGuide[0m(R) V39 hypertext
+     format.  Note that [3mAmigaGuide[0m(R) V34 displays this file without
+     problems, since all unrecognized commands and attributes are
+     simply ignored by [3mAmigaGuide[0m(R).
+
+[1mMakeguide.doc[0m
+     The documentation of [1mmakeinfo[0m in ASCII with ANSI escape
+     sequences.  You need a file-viewer able to handle ANSI escape
+     sequences (like [1mLeggi[0m).
+
+[1mMakeguide.dvi[0m
+     The [3mDevice Independent[0m format. You can print it on your printer
+     (with TeX).
+
+[1mMakeguide.ps[0m
+     The documentation in PostScript format. If you print it on a
+     PostScript printer (or on a non-PostScript printer using [1mpost[0m),
+     you can see the beautiful output generated by
+     [1mtexinfotimes.tex[0m.
+
+[1mMakefile[0m
+     Makefile for generating the various documentation types from the
+     documentation source file [1mmakeguide.texi[0m.
+
+Acknowledgments
+***************
+
+   We would like to thank GNU for the creation of this great
+documentation system and Tom Rokicki for allowing us to distribute the
+[1mamigatexinfo.tex[0m file, which is based on the [1mamiga.tex[0m file
+supplied in the distribution of Radical Eye's AmigaTeX, and for his
+invaluable assistance in adapting [1mamiga.tex[0m to [1mTexinfo[0m.
+
+   Stefan Becker made some very useful suggestions; most of them are now
+implemented in this version of [1mmakeinfo[0m; he was also a beta-tester
+for this new version.
+
+Author Info
+***********
+
+   Good [1mTexinfo[0m-ing! Please send any bug report or enhancement
+request to
+
+         Reinhard Spisser
+         Via Licurgo 12
+         I-20162 Milano MI
+     
+         BIX: reinhards@bix.com
+         INTERNET: spisser@ghost.sm.dsi.unimi.it
+                   rein@bliss.st.dsi.unimi.it
+     
+     
+         Sebastiano Vigna
+         Via California 22
+         I-20144 Milano MI
+     
+         BIX: svigna@bix.com
+         INTERNET: vigna@ghost.dsi.unimi.it
+         UUCP: seba@sebamiga.adsp.sub.org
+
+Concept Index
+*************
+
+
+
+ -error-limit limit                     Options
+ -fill-column width                     Options
+ -footnote-style style                  Options
+ -no-headers                            Options
+ -no-number-footnotes                   Options
+ -no-pointer-validate                   Options
+ -no-split                              Options
+ -no-validate                           Options
+ -no-warn                               Options
+ -output file                           Options
+ -paragraph-indent indent               Options
+ -D var                                 Options
+ -I dir                                 Options
+ -o file                                Options
+ Acknowledgments                        Acknowledgments
+ AmigaGuide                             Distribution Files
+ amigaGuide.library                     Distribution Files
+ amigatexinfo.tex                       Distribution Files
+ amiga_convert_nodes                    Conversion of spaces in node names
+ Appendixstring                         Localization of strings
+ Author Info                            Author Info
+ Becker, Stefan                         Acknowledgments
+ Bugs                                   Bugs
+ CHANGES                                Distribution Files
+ Chapterstring                          Localization of strings
+ Conversion of node names               Conversion of spaces in node names
+ COPYING                                Distribution Files
+ Differences from GNU makeinfo          Differences from GNU makeinfo
+ Distribution                           Distribution
+ Distribution Files                     Distribution Files
+ Footnotestring                         Localization of strings
+ getopt.c                               Distribution Files
+ getopt.h                               Distribution Files
+ getopt1.c                              Distribution Files
+ GNU                                    Acknowledgments
+ How it started                         How it started
+ Index button                           Index button
+ Known Problems & Bugs                  Known Problems & Bugs
+ Makefile                               Distribution Files
+ Makefile                               Distribution Files
+ Makeguide.doc                          Distribution Files
+ Makeguide.dvi                          Distribution Files
+ Makeguide.guide                        Distribution Files
+ Makeguide.ps                           Distribution Files
+ Makeguide.texi                         Distribution Files
+ makeinfo                               Distribution Files
+ makeinfo.c                             Distribution Files
+ Output modes                           Output modes
+ pagestring                             Localization of strings
+ Pointer validation with makeinfo       Pointer Validation
+ Postscript fonts                       Using Postscript fonts
+ Problems                               Problems
+ README                                 Distribution Files
+ Requirements                           Requirements
+ Rokicki, Tomas                         Acknowledgments
+ Sectionstring                          Localization of strings
+ sectionstring                          Localization of strings
+ texindex                               Texindex
+ Texindex                               Texindex
+ texindex                               Distribution Files
+ texindex.c                             Distribution Files
+ texinfo.tex                            Distribution Files
+ texinfotimes.tex                       Using Postscript fonts
+ texinfotimes.tex                       Distribution Files
+ Using Postscript fonts                 Using Postscript fonts
+ Validation of pointers                 Pointer Validation
+ What is Texinfo?                       What is Texinfo?
+ Why makeinfo?                          Why makeinfo?
+ Xrefstring                             Localization of strings
+ xrefstring                             Localization of strings
+

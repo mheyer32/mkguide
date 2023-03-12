@@ -1,0 +1,1434 @@
+\input amigatexinfo
+\input texinfo @c -*-Texinfo-*-
+@comment %**start of header
+@setfilename makeguide.guide
+@set VERSION 1.55
+@finalout
+@setchapternewpage off
+
+@iftex
+@c @afourpaper
+@end iftex
+
+@synindex ky cp
+
+@comment %**start of header
+
+@ifinfo
+Parts of this file are extracted from the @code{Texinfo} manual.@*
+It documents @code{makeinfo}, a program that converts @code{Texinfo}
+files into Info and AmigaGuide(R) files.
+
+Copyright (C) 1993 Reinhard Spisser and Sebastiano Vigna
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+
+@end ignore
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the Free Software Foundation.
+@end ifinfo
+
+@titlepage
+@title Makeguide
+@subtitle A modified GNU makeinfo
+@subtitle Version @value{VERSION}
+@subtitle
+@subtitle 1 June 1993
+@author by Reinhard Spisser and Sebastiano Vigna
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1993 Reinhard Spisser and Sebastiano Vigna
+
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the Free Software Foundation.
+@end titlepage
+
+@ifinfo
+@node Top
+@top
+@unnumbered @code{makeinfo}
+
+This chapter documents the use of the @code{makeinfo} program, versions
+@value{VERSION} and later. Parts of it are extracted from the @code{Texinfo}
+manual.
+@end ifinfo
+
+
+@menu
+* Requirements::
+* Distribution::
+* Why makeinfo?::
+* What is makeinfo::
+* Amiga specific options::
+* Texindex::
+* Known Problems & Bugs::
+* Differences from GNU makeinfo::
+* Distribution Files::
+* Acknowledgments::
+* Author Info::
+* Concept Index::
+@end menu
+
+@node Requirements
+@chapter Requirements
+@cindex Requirements
+
+@code{Makeinfo} @value{VERSION} runs only with version 2.04 or higher of the operating
+system.
+
+In order to print the documentation on a printer you need @TeX{}, the
+typesetting language developed by Donald E. Knuth. If you want to use
+@file{texinfotimes.tex} you need the Postscript fonts and a @TeX{} able to
+handle Postscript fonts. Amiga@TeX{} by Radical Eye Software handles
+PostScript fonts correctly.
+
+In order to view the @dfn{AmigaGuide}(R) files, you need to copy the
+@file{amigaguide.library} from the @file{libs} directory in @file{libs:}.
+
+
+@node Distribution
+@chapter Distribution
+@cindex Distribution
+
+@code{Makeguide} is distributed under terms of the GNU copying license. Please read
+the file @file{COPYING} contained in this distribution.
+
+
+@code{AmigaGuide}, @code{AmigaGuide.info}, @code{amigaguide.library},
+@code{WDisplay}, @code{WDisplay.info} @copyright{} Copyright 1991-93
+Commodore-Amiga, Inc.  All Rights Reserved. Reproduced and distributed under
+license from Commodore.
+
+AMIGAGUIDE SOFTWARE IS PROVIDED @strong{AS IS} AND SUBJECT TO CHANGE; NO
+WARRANTIES ARE MADE. ALL USE IS AT YOU OWN RISK. NO LIABILITY OR
+RESPONSIBILITY IS ASSUMED.
+
+@node Why makeinfo?
+@chapter Why makeinfo?
+@cindex Why makeinfo?
+
+@menu
+* How it started::
+* What is Texinfo?::
+* Output modes::
+@end menu
+
+@node How it started
+@section How it started
+@cindex How it started
+
+This project started with the idea of bringing to the Amiga community a set
+of tools which would have greatly simplified the handling of on-line help as
+opposed to printed manuals. Currently, the Amiga programmer has to keep two
+separate files which have to be updated in parallel. If also some hypertext
+feature is desired, the document writer has to keep a third version of the
+file.
+
+This is unbearable. So we began to look around to find a solution of
+this problem. We finally found something that would be sufficient for this
+tasks: it's called @code{Texinfo}.
+
+@node What is Texinfo?
+@section What is @code{Texinfo}?
+@cindex What is @code{Texinfo}?
+
+The GNU people have found a great way of working around the problem described
+in the previous section.
+
+A @code{Texinfo} document is written in a very simple dialect of @TeX{} that
+is easy to learn and use, and it's specifically tailored for the creation of
+technical manuals. @code{Texinfo} focuses on logical aspects---so the
+@code{@@t@{@}} command, which typesets in fixed width font whatever is in
+the braces, should be never used, and rather replaced with
+@code{@@code@{@}}, @code{@@file@{@}} or @code{@@key@{@}}, depending on the
+semantics of the text involved. This also ensures that each user can
+customize its @code{Texinfo} macros in such a way to spot out specific parts
+of a @code{Texinfo} file, or to set a different page size, text formatting
+etc (an example is @file{texinfotimes.tex} that prints @file{.texinfo} with
+PostScript fonts).
+
+Of course, the format has to be rich enough to express all the needs of a
+technical manual, and small enough to allow a decent translation of all the
+available constructs to plain ASCII (for an hypotetical hypertext viewer).
+Also in this respect @code{Texinfo} is an excellent balance.
+
+Full documentation is available on how to write a @code{Texinfo} document. It is
+written, of course, in @code{Texinfo}, and is very clear. You should be able to
+start authoring a @code{Texinfo} document in an hour or so. If you're used to
+@TeX{}, ten minutes will suffice. This documentation can be found on most
+@code{ftp} sites which have GNU stuff. The latest version of @code{Texinfo} we know of is
+3.0. It's a final, very stable version and the differences to the previous
+version (2.16) are very small (indeed GNU identifies the version inside the
+documentation as 2.18 but the release is called 3.0).
+
+@node Output modes
+@section Output modes
+@cindex Output modes
+
+Once a @code{Texinfo} document is ready, it can be converted in one of the
+following ways:
+
+
+@enumerate
+@item It can be passed through @TeX{} using the set of macros
+@file{texinfo.tex}. You will get a beautiful printed manual.
+
+@item It can be passed through the standard @code{makeinfo} in its
+@dfn{Info} mode; it will generate an @dfn{Info} document (@dfn{Info} is the
+GNU hypertext reader). This is not much of interest for you.
+
+@item It can be passed through @code{makeinfo} with the @code{--no-headers}
+option; it will generate an almost plain ASCII text file (cross references
+and indices will still be in @dfn{Info} style).
+
+@iftex
+@vskip 1cm
+@end iftex
+But with our version of @code{makeinfo},
+@iftex
+@vskip 1cm
+@end iftex
+
+@item It can be passed through @code{makeinfo} with the @code{--amiga} option; it will
+generate an @dfn{AmigaGuide}(R) document; cross references, menus and indices will
+become buttons.
+
+@item It can be passed through @code{makeinfo} with the @code{--amiga --no-headers}
+options; it will generate a plain ASCII text file.
+
+@item It can be passed through @code{makeinfo} with the @code{--amiga-39} option;
+it will generate an @dfn{AmigaGuide}(R) V39 document with bold and italics
+attributes; cross references, menus and indices will become buttons.
+
+@item It can be passed through @code{makeinfo} with the @code{--amiga-39
+--no-headers} options; it will generate a ASCII text file with ANSI escape
+sequences for boldface and italics.
+
+@end enumerate
+
+@xref{Amiga specific options}, for more details on the Amiga-specific
+features of @code{makeinfo}.
+
+Thus, you have to maintain just a document in order to produce a printed
+manual, on-line hypertext documentation and plain ASCII documentation.
+@code{Texinfo} of course relies on a series of information you specify, like
+menus, cross references, etc., but the amount of work you'll need to do this
+will be very small. It also makes a great job in converting to ASCII---for
+instance, @code{@@emph@{@}} text, which comes out slanted in the manual, is
+shown with two asterisk around, the new option @code{--amiga-39} produces
+boldface for @dfn{AmigaGuide}(R) 3.0. We would like to urge all of the Amiga
+community programmers, in particular the people distributing documentation
+as a file, to start using @code{Texinfo}. It will be an enormous quantum
+leap.
+
+Since @code{makeguide} was first released (July 1992), some Amiga developers
+started to write the documentation in @code{Texinfo}; we know of:
+
+@itemize @bullet
+
+@item @dfn{ToolManager} by Stefan Becker;
+
+@item @dfn{Term} by Olaf Barthel;
+
+@item @dfn{F-Finder} by Markus Juani Aalto;
+
+@item @dfn{Cerca} by Carlo Todeschini;
+
+@item @dfn{Arcalc} by Roberto Attias;
+
+@item @dfn{SuperDuper, Mostra, Leggi, ne} (the nice editor) by Sebastiano Vigna;
+
+@item @dfn{Most} by Uwe Röhm;
+
+@item @dfn{Assigns} 1.1 by Enrico Fedrigo;
+
+@item @dfn{MegaD 3.0} (soon to be released);
+
+@item @dfn{Makeguide 1.55} by Reinhard Spisser and Sebastiano Vigna
+@code{8^)}.
+@end itemize
+
+In addition to this, you can have near @strong{all} the GNU documentation in
+@dfn{AmigaGuide}(R) format (more than 15MB of @code{.texi} files).
+
+
+@node What is makeinfo
+@chapter What is @code{makeinfo}?
+
+This chapter documents the use of the @code{makeinfo} program, version
+@value{VERSION}. It is extracted from the @code{Texinfo} manual (with minor
+modifications).
+
+@code{makeinfo} is a program for converting @code{Texinfo} files into
+ @dfn{Info} and @dfn{AmigaGuide(R)} files.  @code{Texinfo} is a documentation system
+that uses a single source file to produce both on-line information and
+printed output.
+
+See the @code{Texinfo} manual, to learn about the @code{Texinfo}
+documentation system.
+
+
+@menu
+* Formatting Control::
+* Options::
+* Pointer Validation::
+@end menu
+
+@node Formatting Control
+@section Controlling Paragraph Formats
+
+In general, @code{makeinfo} @dfn{fills} the paragraphs that it outputs
+to an @dfn{Info} file.  Filling is the process of breaking and connecting
+lines so that lines are the same length as or shorter than the number
+specified as the fill column.  Lines are broken between words.  With
+@code{makeinfo}, you can control:
+
+@itemize @bullet
+@item
+The width of each paragraph (the @dfn{fill-column}).
+@item
+The amount of indentation that the first line of
+each paragraph receives (the @dfn{paragraph-indentation}).
+@end itemize
+
+@node Options
+@section Command Line Options
+
+The following command line options are available for @code{makeinfo}.
+
+@need 100
+@table @code
+@item -D @var{var}
+Cause @var{var} to be defined.  This is equivalent to
+@code{@@set @var{var}} in the @code{Texinfo} file.
+@iftex
+@cindex @code{-D @var{var}}
+@end iftex
+@ifinfo
+@cindex -D @var{var}
+@end ifinfo
+
+@need 150
+@item --error-limit @var{limit}
+Set the maximum number of errors that @code{makeinfo} will report
+before exiting (on the assumption that continuing would be useless).
+The default number of errors that can be reported before
+@code{makeinfo} gives up is 100.@refill
+@iftex
+@cindex @code{--error-limit @var{limit}}
+@end iftex
+@ifinfo
+@cindex --error-limit @var{limit}
+@end ifinfo
+
+@need 150
+@item --fill-column @var{width}
+Specify the maximum number of columns in a line; this is the right-hand
+edge of a line.  Paragraphs that are filled will be filled to this
+width.  The default value for @code{fill-column} is 72.
+@iftex
+@cindex @code{--fill-column @var{width}}
+@end iftex
+@ifinfo
+@cindex --fill-column @var{width}
+@end ifinfo
+@refill
+
+@item --footnote-style @var{style}
+Set the footnote style to @var{style}, either @samp{end} for the end
+node style or @samp{separate} for the separate node style.  The value
+set by this option overrides the value set in a @code{Texinfo} file by an
+@code{@@footnotestyle} command.  When the footnote style is
+@samp{separate}, @code{makeinfo} makes a new node containing the
+footnotes found in the current node.  When the footnote style is
+@samp{end}, @code{makeinfo} places the footnote references at the end
+of the current node.@refill
+@iftex
+@cindex @code{--footnote-style @var{style}}
+@end iftex
+@ifinfo
+@cindex --footnote-style @var{style}
+@end ifinfo
+
+@need 150
+@item -I @var{dir}
+Add @code{dir} to the directory search list for finding files that are
+included using the @code{@@include} command.  By default,
+@code{makeinfo} searches only the current directory.
+@iftex
+@cindex @code{-I @var{dir}}
+@end iftex
+@ifinfo
+@cindex -I @var{dir}
+@end ifinfo
+
+@need 150
+@item --no-headers
+Do not include menus or node lines in the output.  This results in an
+@sc{ascii} file that you cannot read in @dfn{Info} since it does not contain
+the requisite nodes or menus; but you can print such a file in a
+single, typewriter-like font and produce acceptable output.
+@iftex
+@cindex @code{--no-headers}
+@end iftex
+@ifinfo
+@cindex --no-headers
+@end ifinfo
+
+@need 150
+@item --no-split
+@iftex
+@cindex @code{--no-split}
+@end iftex
+@ifinfo
+@cindex --no-split
+@end ifinfo
+
+Suppress the splitting stage of @code{makeinfo}.  Normally, large
+output files (where the size is greater than 70k bytes) are split into
+smaller subfiles, each one approximately 50k bytes.  If you specify
+@samp{--no-split}, @code{makeinfo} will not split up the output
+file.@refill
+
+@need 100
+@item --no-pointer-validate
+@item --no-validate
+Suppress the pointer-validation phase of @code{makeinfo}.  Normally,
+after a @code{Texinfo} file is processed, some consistency checks are made to
+ensure that cross references can be resolved, etc.
+@xref{Pointer Validation}.@refill
+@iftex
+@cindex @code{--no-pointer-validate}
+@cindex @code{--no-validate}
+@end iftex
+@ifinfo
+@cindex --no-pointer-validate
+@cindex --no-validate
+@end ifinfo
+
+@need 150
+@item --no-warn
+Suppress the output of warning messages.  This does @emph{not}
+suppress the output of error messages, only warnings.  You might
+want this if the file you are creating has examples of @code{Texinfo} cross
+references within it, and the nodes that are referenced do not actually
+exist.@refill
+@iftex
+@cindex @code{--no-warn}
+@end iftex
+@ifinfo
+@cindex --no-warn
+@end ifinfo
+
+@item --no-number-footnotes
+Supress automatic footnote numbering.  By default, @code{makeinfo}
+numbers each footnote sequentially in a single node, resetting the
+current footnote number to 1 at the start of each node.
+@iftex
+@cindex @code{--no-number-footnotes}
+@end iftex
+@ifinfo
+@cindex --no-number-footnotes
+@end ifinfo
+
+@need 150
+@item --output @var{file}
+@itemx -o @var{file}
+Specify that the output should be directed to @var{file} and not to the
+file name specified in the @code{@@setfilename} command found in the @code{Texinfo}
+source.  @var{file} can be the special token @samp{-}, which specifies
+standard output.
+@iftex
+@cindex @code{--output @var{file}}
+@cindex @code{-o @var{file}}
+@end iftex
+@ifinfo
+@cindex --output @var{file}
+@cindex -o @var{file}
+@end ifinfo
+
+@need 150
+@item --paragraph-indent @var{indent}
+Set the paragraph indentation style to @var{indent}.  The value set by
+this option overrides the value set in a @code{Texinfo} file by an
+@code{@@paragraphindent} command.  The value of @var{indent} is
+interpreted as follows:@refill
+@iftex
+@cindex @code{--paragraph-indent @var{indent}}
+@end iftex
+@ifinfo
+@cindex --paragraph-indent @var{indent}
+@end ifinfo
+
+@itemize @bullet
+@item
+If the value of @var{indent} is @samp{asis}, do not change the
+existing indentation at the starts of paragraphs.@refill
+
+@item
+If the value of @var{indent} is zero, delete any existing
+indentation.@refill
+
+@item
+If the value of @var{indent} is greater than zero, indent each
+paragraph by that number of spaces.@refill
+@end itemize
+
+@need 100
+@item --reference-limit @var{limit}
+Set the value of the number of references to a node that
+@code{makeinfo} will make without reporting a warning.  If a node has more
+than this number of references in it, @code{makeinfo} will make the
+references but also report a warning.@refill
+
+@need 150
+@item -U @var{var}
+Cause @var{var} to be undefined.  This is equivalent to
+@code{@@clear @var{var}} in the @code{Texinfo} file.
+
+@need 100
+@item --verbose
+Cause @code{makeinfo} to display messages saying what it is doing.
+Normally, @code{makeinfo} only outputs messages if there are errors or
+warnings.@refill
+
+@need 100
+@item --version
+Report the version number of this copy of @code{makeinfo}.@refill
+
+@need 150
+@item --amiga
+Convert the @code{Texinfo} file in a @dfn{AmigaGuide}(R) hypertext file.
+
+@need 150
+@item --amiga-39
+Convert the @code{Texinfo} file in a @dfn{AmigaGuide}(R) V39 hypertext file, with
+support for italic, boldface and other options. If @code{--no-headers} is
+also specified, @code{makeinfo} produces an ASCII file with escape sequences
+for italic and boldface. @xref{Amiga specific options}.
+
+@end table
+
+@node Pointer Validation
+@section Pointer Validation
+@cindex Pointer validation with @code{makeinfo}
+@cindex Validation of pointers
+
+If you do not suppress pointer-validation (by using the
+@samp{--no-pointer-validation} option), @code{makeinfo}
+will check the validity of the final @dfn{Info} file.  Mostly,
+this means ensuring that nodes you have referenced
+really exist.  Here is a complete list of what is
+checked:@refill
+
+@enumerate
+@item
+If a `Next', `Previous', or `Up' node reference is a reference to a
+node in the current file and is not an external reference such as to
+@file{(dir)}, then the referenced node must exist.@refill
+
+@item
+In every node, if the `Previous' node is different from the `Up' node,
+then the `Previous' node must also be pointed to by a `Next' node.@refill
+
+@item
+Every node except the `Top' node must have an `Up' pointer.@refill
+
+@item
+The node referenced by an `Up' pointer must contain a reference to the
+current node in some manner other than through a `Next' reference.
+This includes menu entries and cross references.@refill
+
+@item
+If the `Next' reference of a node is not the same as the `Next' reference
+of the `Up' reference, then the node referenced by the `Next' pointer
+must have a `Previous' pointer that points back to the current node.
+This rule allows the last node in a section to point to the first node
+of the next chapter.@refill
+@end enumerate
+
+@node Amiga specific options
+@chapter Amiga specific options
+
+This chapter describes the Amiga specific options that were added to
+@code{makeinfo}. @xref{Why makeinfo?}, how these features were implemented.
+
+@menu
+* Amiga output::
+* Localization of strings::
+* Index button::
+* Conversion of spaces in node names::
+* Using Postscript fonts::
+@end menu
+
+@node Amiga output
+@section Amiga output
+
+Two options have been added to the GNU @code{makeinfo}:
+
+@code{--amiga} which converts to @dfn{AmigaGuide}(R) V34
+
+@code{--amiga-39} which converts to @dfn{AmigaGuide}(R) V39 (using
+bold and italic).
+
+When the @code{--amiga} and @code{--no-headers} options are used,
+a plain ASCII file will be produced.
+
+When the @code{--amiga-39} and @code{--no-headers} options are used,
+@code{makeinfo} generates ANSI escape control sequences for
+bold and italics.
+
+
+@node Localization of strings
+@section Localization of strings
+
+Starting with release 2.1 the Amiga Operating system supports localization
+of the user interface. Until now it was not possible to localize the
+hard-coded strings in @code{makeinfo} (you had to re-compile
+@code{makeinfo}) and @file{texinfo.tex}. Recompiling @code{makeinfo} needs
+at least 3.5 MB of free RAM space, the GNU C compiler (makeinfo uses a few
+GNU C 2.0 features), and a hard disk. Compiling @code{makeinfo} on a 68030
+took about 10 minutes (the source is one file over 200KB long). Probably
+someone didn't even like the built-in strings and wanted to replace them.
+This was a big handicap for people writing documentation in different
+languages than English and wanted to write the documentation in
+@code{makeinfo}.
+
+@code{makeinfo} (and @file{texinfo.tex}) now supports localization for all
+hardcoded strings. An easy to use way was provided to do this task.
+
+The localization is done by setting one or more of the following variables
+in your @file{.Texinfo} file:
+
+@example
+@@set @var{variable} @dfn{string to translate}
+@end example
+
+where @var{variable} could be one of the following:
+
+@need 100
+@table @code
+
+@item xrefstring
+@iftex
+@cindex @code{xrefstring}
+@end iftex
+@ifinfo
+@cindex xrefstring
+@end ifinfo
+
+Replace the standard @samp{see} string that @code{makeinfo} and
+@file{texinfo.tex} prints in front of a @code{@@pxref@{@}} and
+@code{@@ref@{@}} with the string given as argument.
+
+@item Xrefstring
+@iftex
+@cindex @code{Xrefstring}
+@end iftex
+@ifinfo
+@cindex Xrefstring
+@end ifinfo
+
+Replace  the standard @samp{See} string that @code{makeinfo} and
+@file{texinfo.tex} prints in front of a @code{@@xref@{@}} with the string
+given as argument.
+
+@item Footnotestring
+@iftex
+@cindex @code{Footnotestring}
+@end iftex
+@ifinfo
+@cindex Footnotestring
+@end ifinfo
+Replace the standard @samp{Footnote} string that @code{makeinfo} prints
+before starting to print the footnotes. This variable has only effect for
+@code{makeinfo}.
+
+@item Chapterstring
+@iftex
+@cindex @code{Chapterstring}
+@end iftex
+@ifinfo
+@cindex Chapterstring
+@end ifinfo
+Replace  the standard @samp{Chapter} string that @file{texinfo.tex} use
+for page headings, cross references, and others. This variable has only
+effect for @file{texinfo.tex}.
+
+@item Appendixstring
+@iftex
+@cindex @code{Appendixstring}
+@end iftex
+@ifinfo
+@cindex Appendixstring
+@end ifinfo
+Replace the standard @samp{Appendix} string that @file{texinfo.tex} use
+for page headings, cross references, and others. This variable has only
+effect for @file{texinfo.tex}.
+
+@item Sectionstring
+@iftex
+@cindex @code{Sectionstring}
+@end iftex
+@ifinfo
+@cindex Sectionstring
+@end ifinfo
+Replace  the standard @samp{Section} string that @file{texinfo.tex} use
+for page headings, cross references, and others. This variable has only
+effect for @file{texinfo.tex}.
+
+@item sectionstring
+@iftex
+@cindex @code{sectionstring}
+@end iftex
+@ifinfo
+@cindex sectionstring
+@end ifinfo
+Replace the standard @samp{section} string that @file{texinfo.tex} use for
+page headings, cross references, and others.This variable has only effect
+for @file{texinfo.tex}. (this is the section string with the starting
+@samp{s} lowercase).
+
+@item pagestring
+@iftex
+@cindex @code{pagestring}
+@end iftex
+@ifinfo
+@cindex pagestring
+@end ifinfo
+Replace  the standard @samp{page} string that @file{texinfo.tex} use for page
+headings, cross references, and others. This variable has only
+effect for @file{texinfo.tex}.
+@end table
+
+@strong{Note:} To undefine the variables, you can't @code{@@set} them with
+no arguments; if you do so, you set the translation string to an empty
+string. You must use @code{@@unset @var{variable}} to undefine the variable.
+
+An example:
+
+To get a different string printed before the
+cross reference, you should add a @code{@@set} command in your @code{Texinfo} file:
+
+@example
+@@set xrefstring vedi
+@@set Xrefstring Vedi
+@end example
+
+or you can add a define at the @code{makeinfo} command line:
+
+
+@code{makeinfo --amiga-39 -D "xrefstring vedi" -D "Xrefstring Vedi" foo.texi}
+
+@emph{Note:} The localization of the strings @code{xrefstring} and
+@code{Xrefstring} has only effect if you set both variables.
+
+You may ask: why to implement the localization as variables and not
+as new options? We decided to do so for the following reasons:
+
+
+@itemize @bullet
+@item we wanted to limit the attitional options of @code{makeinfo} with respect
+to the original GNU makeinfo to a minimal number (in effect only for the
+various versions of @dfn{AmigaGuide}(R));
+
+@item a second reason is that the implementation of localization @emph{via}
+options to would have required many more work (it took us about 15 minutes
+to see how to implement it and about 1 minute to implement it);
+
+@item a nice side-effect of this is that you can re-set the strings within
+the document, allowing you to make a unique multi-language document;
+
+@item since the localization features were also implemented
+in the macro packages @file{texinfo.tex} and @file{texinfotimes.tex}, you
+can use this feature also when printing the @code{.Texinfo} file (you can't
+do this if you specify the translated string as a command line argument of
+@code{makeinfo}). For this reason you should @code{@@set} the translations
+in the @code{.Texinfo} file;
+
+@item you can specify the translation strings in the @code{.Texinfo} file
+without worrying if the string refers only to @file{texinfo.tex} or
+@code{makeinfo}.
+
+@item in other words, we decided to do so because doing it with variables
+made the localization easier to use and more powerful.
+
+@end itemize
+
+Example:
+
+ @set xrefstring vedi
+ @set Xrefstring Vedi
+
+@example
+ @@set xrefstring vedi
+ @@set Xrefstring Vedi
+ @@xref@{Index button,@},
+@end example
+
+ results in
+
+ @xref{Index button,},
+
+ @set xrefstring Give a nice look at
+ @set Xrefstring Give a proper look at
+
+@example
+ @@set xrefstring Give a nice look at
+ @@set Xrefstring Give a proper look at
+ @@xref@{Index button,@},
+@end example
+
+ results in
+
+ @xref{Index button,},
+
+ @set xrefstring see
+ @set Xrefstring See
+
+@strong{Remember!} You have to specify @strong{both}
+@code{xrefstring} and @code{Xrefstring} if you want to translate the
+strings that are printed before a cross reference. @code{@@set}-ting only
+@code{xrefstring} or @code{Xrefstring} does have no effect.
+
+@strong{Note:} It's more useful if you @code{@@set} the localization
+variables in the @code{Texinfo} document rather than using the @code{-D} feature of
+@code{makeinfo}, because you can also have the same effect on the printed @code{Texinfo}
+files.
+
+You can @code{@@set} the variable more than one time in your document; doing
+so you can have pieces of code having different strings. (this because the
+status of the variables is verified when a cross-reference is written). This
+could be very useful when you're writing only one @code{Texinfo} file containing
+the documentation in different languages.
+
+@node Index button
+@section Index button
+
+The Index button points to the Concept Index (if the Concept Index exists).
+This is done by inserting a @code{@@Index Concept Index} immediatly after
+the beginning of the Concept Index node.
+@cindex Index button
+
+@node Conversion of spaces in node names
+@section Conversion of spaces in node names
+
+Since @dfn{AmigaGuide}(R) does not support spaces in node names (when trying to get
+an online help with @code{SendAmigaGuideCmdA()}), the spaces are converted
+in underscores if the variable @var{amiga_convert_nodes} is set (done with
+@code{@@set amiga_convert_nodes} in your @code{Texinfo} file).
+@iftex
+@cindex @code{amiga_convert_nodes}
+@end iftex
+@ifinfo
+@cindex amiga_convert_nodes
+@end ifinfo
+@cindex Conversion of node names
+
+As with the localization feature of @code{makeinfo}, you can @code{@@set}
+the conversion within the document, you have the same advantages as with the
+localization variables.
+
+@node Using Postscript fonts
+@section Using Postscript fonts
+@cindex Using Postscript fonts
+@cindex Postscript fonts
+@iftex
+@cindex @code{texinfotimes.tex}
+@end iftex
+@ifinfo
+@cindex texinfotimes.tex
+@end ifinfo
+
+Since we have a @TeX{} on the Amiga that handles correctly and without
+any problem the Adobe Postscript fonts, we decided to make a variation of
+the @file{texinfo.tex} macro package that prints the @code{Texinfo} files
+with these fonts. Computer Modern roman, italic, oblique and bold is
+substituted by Times roman, Times italic, Times oblique and Times bold. The
+Computer Modern TypeWriter font is substituted by Courier, the sans-serif
+style is substituted by Helvetica (actually @code{Texinfo} does not use the
+sans-serif style). The result of this is placed in the file
+@file{texinfotimes.tex}.
+
+To print a @code{Texinfo} document with Times fonts, the only thing you have to do
+is to substitute the @code{\input texinfo} line at the beginning of the
+@code{Texinfo} file with @code{\input texinfotimes}. You you need to recompile the
+file with @TeX{}. After recompiling it you can use @TeX{}'s previewer to
+look how nice it is or use the printer drivers to print it.
+
+
+@node Differences from GNU makeinfo
+@chapter Differences from GNU makeinfo
+@cindex Differences from GNU makeinfo
+
+While we were working on the project, it became clear that much more was
+possible with this new tool. For instance, all of the GNU software comes
+with @code{Texinfo} documentation. It was a matter of a couple of minutes to make
+the @code{Texinfo} manual (540K!) into an @dfn{AmigaGuide}(R) file that we could browse at
+will, in full @dfn{AmigaGuide}(R) hypertext.
+
+Every port of this kind has of course some kind of tradeoff. @dfn{Info} and
+@dfn{AmigaGuide}(R) have a rather vaste intersection of features, but both have
+specific features that can't be mimicked on the other side.
+
+The main design choice at the specification level was that @emph{every}
+@code{Texinfo} should have been convertible to an @dfn{AmigaGuide}(R) file. And that
+@emph{every} @code{Texinfo} file prepared for @dfn{AmigaGuide}(R) should have been
+convertible to @dfn{Info} format (this is essential, e.g., for people doing
+cross-development).
+
+Fortunately, we were enough lucky: all @dfn{Info} features are translatable
+in @dfn{AmigaGuide}(R) features, except for file splitting; but
+@dfn{AmigaGuide}(R) doesn't load a file entirely---just loads a part of it.
+So even a 1 megabyte document is not a problem for it. @dfn{Info} instead
+relies on a splitting mechanism which is in @code{makeinfo}: this mechanism
+is disabled by the options @code{--amiga} and @code{--amiga-39}.
+
+There are also a couple of problems with the representation of buttons;
+@dfn{Info} does not have @emph{real} buttons---it just put in the text
+something of the form @code{*Note Nodename::}. Thus, the aspect of a line in
+@dfn{Info} or @dfn{AmigaGuide}(R) is very different. We chose to put in the
+button name only the @emph{real title} of the button, i.e., the destination
+node name if nothing else is specified, or the second argument of a
+@code{@@ref}, @code{@@xref} or @code{@@pxref} command if available.
+Moreover, we noted that the absence of @code{*Note}'s had made the text a
+bit unpleasant to read; so we inserted @code{see} and @code{See} whenever
+@code{Texinfo} would have done it in the printed text. @xref{Localization of
+strings}, for more detailed information on how localize these strings.
+
+For menus, @code{Texinfo} relies on the visualisation of @strong{both} the button
+name @strong{and} the destination node name when building indices. Cutting
+away the destination node name would have resulted in a horribly looking
+index. So we decided to preserve the visualization of the destination node
+name after a menu button when building an index. A normal menu will instead
+show just a button.
+
+Also, we slightly improved an aspect of @code{@@pxref}. Since no ending point was
+needed before the closing parenthesis, we stripped it off.
+
+All the features of @dfn{Info} which maps to @dfn{AmigaGuide}(R) have been implemented.
+Thus, the Top node of a @code{Texinfo} document will become the Main node of the
+@dfn{AmigaGuide}(R) file, the @code{@@master} command will be set to the name of the @code{Texinfo}
+file, and the @code{@@width} command will be set to the value @code{makeinfo} is using for
+formatting text. The @samp{Index} button points to the Concept Index (if the
+Concept Index exists).
+
+The @code{--no-headers} option has now a better behaviour when also
+@code{--amiga} is selected. @code{*Note}'s are replaced by @code{see}, etc..
+The result is a completely human readable ASCII file. @code{--no-headers} in
+combination with @code{--amiga-39} generates ASCII files with ANSI escape
+sequences. @xref{Localization of strings}, for more detailed information on
+how localize these strings.
+
+@node Texindex
+@chapter Texindex
+@cindex Texindex
+
+This chapter explains how to use @code{texindex}. It is extraced from the
+@dfn{Texinfo} manual (with small modifications).
+
+The @code{tex} formatting commands itself does not sort the indices; it
+writes an output file of unsorted index data.  This is a misfeature of
+@TeX{}.  Hence, to generate a printed index, you first need a sorted
+index to work from.  The @code{texindex} command sorts indices.  (The
+source file @file{texindex.c} comes as part of this distribution.)@refill
+@cindex texindex
+
+@example
+Usage: texindex [-k] [-T @var{tempdir}] @var{infile} [-o @var{outfile}] ...
+@end example
+
+Each infile arg can optionally be followed by a @code{-o} @var{outfile} arg;
+for each infile that is not followed by a @code{-o} arg, the infile name
+with @code{s} (for `sorted') appended is used for the outfile.
+
+@code{-T} dir is the directory to put temp files in, instead of @code{/tmp}.
+
+@code{-k} means `keep tempfiles', for debugging.
+
+
+The @code{tex} formatting command outputs unsorted index files under
+names that obey a standard convention.  These names are the name of
+your main input file to the @code{tex} formatting command, with
+everything after the first period thrown away, and the two letter
+names of indices added at the end.  For example, the raw index output
+files for the input file @file{foo.texinfo} would be @file{foo.cp},
+@file{foo.vr}, @file{foo.fn}, @file{foo.tp}, @file{foo.pg} and
+@file{foo.ky}.  Those are exactly the arguments to give to
+@code{texindex}.@refill
+
+For each file specified, @code{texindex} generates a sorted index file
+whose name is made by appending @samp{s} to the input file name.  The
+@code{@@printindex} command knows to look for a file of that name.
+@code{texindex} does not alter the raw index output file.@refill
+
+After you have sorted the indices, you need to rerun the @code{tex}
+formatting command on the Texinfo file.  This regenerates a formatted
+@sc{dvi} file with up-to-date index entries.@footnote{If you use more
+than one index and have cross references to an index other than the
+first, you must run @code{tex} @emph{three times} to get correct output:
+once to generate raw index data; again (after @code{texindex}) to output
+the text of the indices and determine their true page numbers; and a
+third time to output correct page numbers in cross references to them.
+However, cross references to indices are rare.}@refill
+
+To summarize, this is a three step process:
+
+@enumerate
+@item
+Run the @code{tex} formatting command on the Texinfo file.  This
+generates the formatted @sc{dvi} file as well as the raw index files
+with two letter extensions.@refill
+
+@item
+Run the shell command @code{texindex} on the raw index files to sort
+them.  This creates the corresponding sorted index files.@refill
+
+@item
+Rerun the @code{tex} formatting command on the Texinfo file.  This
+regenerates a formatted @sc{dvi} file with the index entries in the
+correct order.  This second run also corrects the page numbers for
+the cross references.  (The tables of contents are always correct.)@refill
+@end enumerate
+
+You need not run @code{texindex} each time after you run the
+@code{tex} formatting.  If you do not, on the next run, the @code{tex}
+formatting command will use whatever sorted index files happen to
+exist from the previous use of @code{texindex}.  This is usually
+@sc{ok} while you are debugging.@refill
+
+
+@node Known Problems & Bugs
+@chapter Known Problems & Bugs
+@cindex Known Problems & Bugs
+
+@menu
+* Problems::
+* Bugs::
+@end menu
+@node Problems
+@section Problems
+@cindex Problems
+
+It should be noted that unfortunately @code{Texinfo} doesn't have any way of
+specifying a @dfn{line} in a node. So this feature of @dfn{AmigaGuide}(R) is not
+representable in a @code{Texinfo} file. This is indeed the biggest drawback of
+using @code{Texinfo} for writing @dfn{AmigaGuide}(R) documents. But we feel that the
+advantages are definitely overwhelming.
+
+Due to the fact that @dfn{AmigaGuide}(R) is rather picky about the characters it
+allows in a button name or in a node name, at least for the time being
+@code{makeinfo} has to replace in a node name every slash or backslash with
+a dash and every quotes with a single open quote. Still, names with curly
+braces in them will behave incorrectly. But this is an @dfn{AmigaGuide}(R) problem.
+
+@strong{Note:} @code{Texinfo} doesn't support officially extended or accented
+characters. The workaround, for the time being, is to use ASCII extended
+characters like à, etc. in the text (in place of the various @code{\`}, etc.
+commands). @code{makeinfo} will process the document flawlessly, and by
+including the @code{amigatexinfo.tex} file supplied in this distribution
+archive @strong{before} @file{texinfo.tex} into your document, @code{Texinfo} will
+typeset correctly the accented characters (this should work on any @TeX{}
+system which supports @TeX{} 3.0; we tried successfully Amiga@TeX{} and
+Pas@TeX{}). Note also that the first (October) release of @code{makeinfo}
+1.49 had an incorrect @code{amiga.tex} file, which did not work with many
+foreign characters.
+
+
+@node Bugs
+@section Bugs
+@cindex Bugs
+
+
+Finally, we want to describe some bugs we found both in @code{Texinfo} and
+@dfn{AmigaGuide}(R), whose knowledge can be helpful.
+
+@dfn{AmigaGuide}(R) V39 does not handle correctly the @code{@@} character.
+When @dfn{AmigaGuide}(R)(R) finds this character in the first column of a line,
+it simply ignores the entire word (this because its commands always have to
+begin in the first column of a line). Due to implementation problems, we
+didn't solve this problem (sorry). @dfn{AmigaGuide}(R) 39 ignores the word also
+if @code{@@} is the first character in an attribute. So
+@code{@@@{b@}@@section@@@{ub@}} is ignored. @code{makeinfo} puts a space
+character before it, so that the commands are showed. This is only one of
+the reasons why we decided to not support the @code{@@wordwrap} feature of
+@dfn{AmigaGuide}(R) V39 (with wordwrap the possibility to get a @@ command
+at the first column is high, and even this commands are not displayed).
+Since the wordwrap of @dfn{AmigaGuide}(R) 39 is rather simple, everything
+different than plain text would appeared very bad.
+
+@dfn{AmigaGuide}(R) 33.1369 doesn't work properly if the name of a button
+contains an apostrophe (@samp{'}). So you shouldn't use button names
+containing @code{@@code@{@}}, @code{@@samp@{@}}, etc. (they are always
+forbidden in node names, but you can specify a button name different from
+the node name in an external reference command). The workaround is to not
+use apostrophes in button names (@dfn{AmigaGuide}(R) V34 and V39 doesn't
+suffer from this problem). Since now @dfn{AmigaGuide}(R) V34 is freely
+distributable, you should have no problem upgrading to the new versions. The
+@code{makeguide} distribution archive contains the latest version of
+@dfn{AmigaGuide}(R) V34 (version 34.8, dated 3-May-93).
+
+@code{Texinfo} 2.16 and 3.0 will insert an unnamed TOC entry for the Top
+node when the automatic pointer generation feature of @code{makeinfo} is
+used (that is, your Top node is defined @dfn{via} @code{@@node Top followed}
+by @code{@@top}). You should include the whole Top node in a
+@code{@@ifinfo/@@end ifinfo} pair for the time being.
+
+@code{texinfo.tex} version 2.108 has wrong settings for @code{@@afourpaper}.
+We corrected these problems in the version 2.109 (included with this
+archive).
+
+@code{makeinfo} does not sort correctly the index if an entry contains
+formatting commands, like @code{@@code}. Index entries should be written
+without formatting commands or making different entries for  @dfn{Info} and
+@code{Texinfo}. The Index entries of @code{makeguide.texi} are written in
+this way.
+
+@node Distribution Files
+@chapter Distribution Files
+@cindex Distribution Files
+
+The archive @file{mkguide154.lha} contains the following files:
+
+In the root directory:
+
+@table @code
+
+@item makeinfo
+The @code{makeinfo} program. @xref{What is makeinfo}, for
+more information how to use it.
+@iftex
+@cindex @code{makeinfo}
+@end iftex
+@ifinfo
+@cindex makeinfo
+@end ifinfo
+
+@item texindex
+Used for sorting the Indexes generated by @code{Texinfo}
+(when compiling it with @TeX{}). You need to run @TeX{} twice to have the
+Indexes updated. @xref{Texindex}, for more information how to use it.
+@iftex
+@cindex @code{texindex}
+@end iftex
+@ifinfo
+@cindex texindex
+@end ifinfo
+
+
+@item COPYING
+The GNU distribution license. @code{makeguide} is distributed under this
+license. Please read it!
+@iftex
+@cindex @code{COPYING}
+@end iftex
+@ifinfo
+@cindex COPYING
+@end ifinfo
+
+@item CHANGES
+Changes made to @code{makeinfo} since the latest release.
+@iftex
+@cindex @code{CHANGES}
+@end iftex
+@ifinfo
+@cindex CHANGES
+@end ifinfo
+
+
+@item README
+Read it!
+@iftex
+@cindex @code{README}
+@end iftex
+@ifinfo
+@cindex README
+@end ifinfo
+
+
+@item AmigaGuide
+Utility that displays @dfn{AmigaGuide}(R) documents. You need
+@file{amigaguide.library} in your @file{libs:} directory.
+@iftex
+@cindex @code{AmigaGuide}
+@end iftex
+@ifinfo
+@cindex AmigaGuide
+@end ifinfo
+
+@end table
+
+In the @file{libs} directory:
+
+@table @code
+@item amigaguide.library
+This library contains functions to handle hyper-text documents. You should
+copy it in your @file{libs:} directory in order to work. Use the
+@file{AmigaGuide} utility to display the hypertext documents (e.g.
+@file{makeguide.guide} in the @file{doc} directory.
+@iftex
+@cindex @code{amigaGuide.library}
+@end iftex
+@ifinfo
+@cindex amigaGuide.library
+@end ifinfo
+
+@end table
+
+
+In the @file{src} directory:
+
+@table @code
+@item getopt.c
+Support file for @code{makeinfo}.
+@iftex
+@cindex @code{getopt.c}
+@end iftex
+@ifinfo
+@cindex getopt.c
+@end ifinfo
+
+@item getopt1.c
+Support file for @code{makeinfo}.
+@iftex
+@cindex @code{getopt1.c}
+@end iftex
+@ifinfo
+@cindex getopt1.c
+@end ifinfo
+
+@item getopt.h
+Support file for @code{makeinfo}.
+@iftex
+@cindex @code{getopt.h}
+@end iftex
+@ifinfo
+@cindex getopt.h
+@end ifinfo
+
+@item makeinfo.c
+The source for @code{makeinfo}.
+@iftex
+@cindex @code{makeinfo.c}
+@end iftex
+@ifinfo
+@cindex makeinfo.c
+@end ifinfo
+
+@item texindex.c
+The source for @code{texindex}.
+@iftex
+@cindex @code{texindex.c}
+@end iftex
+@ifinfo
+@cindex texindex.c
+@end ifinfo
+
+@item Makefile
+Makefile to build @code{makeinfo}. You need the GNU C compiler to compile it
+(@file{makeinfo.c} uses some features specific to the GNU C compiler). The
+makefile has options to compile it with Markus Wild's GCC port (actual
+version 2.3.3) and Davide Pasetto's GCC port (actual version 2.2.2).
+@iftex
+@cindex @code{Makefile}
+@end iftex
+@ifinfo
+@cindex Makefile
+@end ifinfo
+
+@end table
+
+In the @file{texinfo} directory:
+
+This directory contains the macros for use with @TeX{}.
+
+@table @code
+
+@item texinfo.tex
+The macro package that defines the language of Texinfo. You should copy this
+file in a path where @TeX{} can find it. Version 2.109.
+@iftex
+@cindex @code{texinfo.tex}
+@end iftex
+@ifinfo
+@cindex texinfo.tex
+@end ifinfo
+
+@item texinfotimes.tex
+Same as @file{texinfo.tex}, but with font descriptions for PostScript. You
+need the Postscript fonts Times, Helvetica and Courier installed and a @TeX{}
+able to handle with PostScript fonts. Version 2.109.
+@iftex
+@cindex @code{texinfotimes.tex}
+@end iftex
+@ifinfo
+@cindex texinfotimes.tex
+@end ifinfo
+
+@item amigatexinfo.tex
+Special file for converting the accents in specific @TeX{} characters. If you
+use accents in your @file{.texinfo} file, you should include this file
+@strong{before} @file{texinfo.tex} or @file{texinfotimes.tex}
+@iftex
+@cindex @code{amigatexinfo.tex}
+@end iftex
+@ifinfo
+@cindex amigatexinfo.tex
+@end ifinfo
+
+@end table
+
+In the @file{doc} directory:
+
+@table @code
+
+@item Makeguide.texi
+The documentation of @code{makeinfo} in @code{Texinfo} format. You can use
+@code{makeinfo} program to convert it to plain ASCII file or to the
+@dfn{AmigaGuide}(R) hypertext format. @xref{Options}, to learn more about how to
+generate output. You can also compile this document with @file{texinfo.tex}
+or @file{texinfotimes.tex} to have a nice output on the printer.
+@iftex
+@cindex @code{Makeguide.texi}
+@end iftex
+@ifinfo
+@cindex Makeguide.texi
+@end ifinfo
+
+@item Makeguide.guide
+The documentation of @code{makeinfo} in @dfn{AmigaGuide}(R) V39 hypertext format.
+Note that @dfn{AmigaGuide}(R) V34 displays this file without problems, since all
+unrecognized commands and attributes are simply ignored by
+@dfn{AmigaGuide}(R).
+@iftex
+@cindex @code{Makeguide.guide}
+@end iftex
+@ifinfo
+@cindex Makeguide.guide
+@end ifinfo
+
+@item Makeguide.doc
+The documentation of @code{makeinfo} in ASCII with ANSI escape sequences.
+You need a file-viewer able to handle ANSI escape sequences (like
+@code{Leggi}).
+@iftex
+@cindex @code{Makeguide.doc}
+@end iftex
+@ifinfo
+@cindex Makeguide.doc
+@end ifinfo
+
+
+@item Makeguide.dvi
+The @dfn{Device Independent} format. You can print it on your
+printer (with @TeX{}).
+@iftex
+@cindex @code{Makeguide.dvi}
+@end iftex
+@ifinfo
+@cindex Makeguide.dvi
+@end ifinfo
+
+@item Makeguide.ps
+The documentation in PostScript format. If you print it on a PostScript
+printer (or on a non-PostScript printer using @file{post}), you can see the
+beautiful output generated by @file{texinfotimes.tex}.
+@iftex
+@cindex @code{Makeguide.ps}
+@end iftex
+@ifinfo
+@cindex Makeguide.ps
+@end ifinfo
+
+
+@item Makefile
+Makefile for generating the various documentation types from the
+documentation source file @code{makeguide.texi}.
+@iftex
+@cindex @code{Makefile}
+@end iftex
+@ifinfo
+@cindex Makefile
+@end ifinfo
+
+@end table
+
+
+@node Acknowledgments
+@chapter Acknowledgments
+@cindex Acknowledgments
+@cindex GNU
+@cindex Rokicki, Tomas
+@cindex Becker, Stefan
+
+We would like to thank GNU for the creation of this great documentation
+system and Tom Rokicki for allowing us to distribute the
+@code{amigatexinfo.tex} file, which is based on the @code{amiga.tex} file
+supplied in the distribution of Radical Eye's Amiga@TeX{}, and for his
+invaluable assistance in adapting @code{amiga.tex} to @code{Texinfo}.
+
+Stefan Becker made some very useful suggestions; most of them are now
+implemented in this version of @code{makeinfo}; he was also a beta-tester
+for this new version.
+
+@node Author Info
+@chapter Author Info
+@cindex Author Info
+
+Good @code{Texinfo}-ing! Please send any bug report or enhancement request to
+
+@example
+    Reinhard Spisser
+    Via Licurgo 12
+    I-20162 Milano MI
+
+    BIX: reinhards@@bix.com
+    INTERNET: spisser@@ghost.sm.dsi.unimi.it
+              rein@@bliss.st.dsi.unimi.it
+
+
+    Sebastiano Vigna
+    Via California 22
+    I-20144 Milano MI
+
+    BIX: svigna@@bix.com
+    INTERNET: vigna@@ghost.dsi.unimi.it
+    UUCP: seba@@sebamiga.adsp.sub.org
+@end example
+
+@page
+@node Concept Index
+
+@unnumbered Concept Index
+
+@printindex cp
+@contents
+@bye
