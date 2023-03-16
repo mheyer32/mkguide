@@ -61,7 +61,7 @@ extern noshare char *sys_errlist[];
 #else /* !VMS */
 
 extern int sys_nerr;
-extern char *sys_errlist[];
+extern char const * const sys_errlist[];
 
 #  if defined (HAVE_SYS_FCNTL_H)
 #    include <sys/types.h>
