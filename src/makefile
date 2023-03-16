@@ -14,7 +14,7 @@
 
 ####Options to compile with Markus Wild GCC
 
-OPTFLAGS = -c -O2 -Wno-implicit-int
+OPTFLAGS = -m32 -c -O0 -g -ggdb -Wno-implicit-int -Wno-implicit-function-declaration
 LINK =
 
 ###End Options Markus Wild GCC
@@ -25,7 +25,7 @@ OBJ = getopt.o getopt1.o makeinfo.o
 
 
 all: $(OBJ)
-	gcc $(OBJ) -o mkguide $(LINK)
+	gcc -m32 $(OBJ) -o mkguide $(LINK)
 
 
 makeinfo.o: makeinfo.c
@@ -39,7 +39,7 @@ getopt1.o: getopt1.c
 
 
 texindex: texindex.o
-	gcc getopt.o getopt1.o texindex.o -o texindex $(LINK)
+	gcc $(OPTFLAGS) getopt.o getopt1.o texindex.o -o texindex $(LINK)
 
 
 texindex.o: texindex.c
