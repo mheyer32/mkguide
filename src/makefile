@@ -14,7 +14,7 @@
 
 ####Options to compile with Markus Wild GCC
 
-OPTFLAGS = -m32 -c -O0 -g -ggdb -Wno-implicit-int -Wno-implicit-function-declaration
+OPTFLAGS = -m32 -c -O2 -Wno-implicit-int -Wno-implicit-function-declaration
 LINK =
 
 ###End Options Markus Wild GCC

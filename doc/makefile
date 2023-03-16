@@ -1,6 +1,7 @@
 # makefile for generating output files from makeguide.texi
 
 SOURCE = makeguide
+MKGUIDE = ../src/mkguide
 
 all: dvi guide doc
 
@@ -10,13 +11,13 @@ dvi:
 
 
 guide:
-    makeinfo --amiga-39 $(SOURCE).texi
+	${MKGUIDE} --amiga-39 $(SOURCE).texi
 
 doc:
-    makeinfo --amiga-39 --no-headers -o $(SOURCE).doc $(SOURCE).texi
+	${MKGUIDE} --amiga-39 --no-headers -o $(SOURCE).doc $(SOURCE).texi
 
 test:
-    makeinfo --amiga-39 $(SOURCE).texi
+	${MKGUIDE} --amiga-39 $(SOURCE).texi
 
 ps:
-   dvips $(SOURCE)
+	dvips $(SOURCE)
