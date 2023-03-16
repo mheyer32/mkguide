@@ -73,8 +73,10 @@
 #include <ctype.h>
 #include <sys/stat.h>
 #include <ctype.h>
+#include <stdarg.h>
 #if !defined (AMIGA)
 #include <pwd.h>
+#include <unistd.h>
 #endif
 #include <errno.h>
 #include "getopt.h"
@@ -110,7 +112,7 @@ extern char *alloca ();
 
 
 void *xmalloc (), *xrealloc ();
-static void isolate_nodename ();
+static void isolate_nodename (char *nodename);
 
 /* Non-zero means that we are currently hacking the insides of an
    insertion which would use a fixed width font. */
@@ -502,6 +504,9 @@ BRACE_ELEMENT *brace_stack = (BRACE_ELEMENT *) NULL;
 
 /* Forward declarations. */
 
+int add_word_args (const char *format, ...);
+void execute_string(const char *format, ...);
+
 int insert_self (), cm_ignore_line ();
 
 int
@@ -546,8 +551,10 @@ int cm_macro (), cm_unmacro ();
 int cm_paragraphindent (), cm_footnotestyle ();
 
 /* Internals. */
-int do_nothing (), command_name_condition ();
-int misplaced_brace (), cm_obsolete ();
+void do_nothing ();
+int command_name_condition ();
+void misplaced_brace ();
+int cm_obsolete ();
 
 typedef struct
   {
@@ -803,8 +810,8 @@ struct option long_options[] =
   {"reference-limit", 1, 0, 'r'},	/* formerly -rl */
   {"verbose", 0, &verbose_mode, 1},	/* formerly -verbose */
   {"version", 0, 0, 'V'},
-  {"amiga", 0, &amiga_guide_34, 1},	/* convert to AmigaGuide® */
-  {"amiga-39", 0, &amiga_guide_39, 1},	/* convert to AmigaGuide® 39 */
+  {"amiga", 0, &amiga_guide_34, 1},	/* convert to AmigaGuide? */
+  {"amiga-39", 0, &amiga_guide_39, 1},	/* convert to AmigaGuide? 39 */
   {NULL, 0, NULL, 0}
 };
 
@@ -822,9 +829,8 @@ struct option long_options[] =
 
 /* For each file mentioned in the command line, process it, turning
    texinfo commands into wonderfully formatted output text. */
-main (argc, argv)
-     int argc;
-     char **argv;
+int main (int argc, char **argv)
+
 {
   extern int errors_printed;
   char *filename_part ();
@@ -951,10 +957,14 @@ print_version_info ()
 /*                                                                  */
 /* **************************************************************** */
 
+int error(char * format, ...);
+
+void memory_error (     char *callers_name,
+                  int bytes_wanted);
+
 /* Just like malloc, but kills the program in case of fatal error. */
 void *
-xmalloc (nbytes)
-     int nbytes;
+xmalloc (int nbytes)
 {
   void *temp = (void *) malloc (nbytes);
 
@@ -966,9 +976,9 @@ xmalloc (nbytes)
 
 /* Like realloc (), but barfs if there isn't enough memory. */
 void *
-xrealloc (pointer, nbytes)
-     void *pointer;
-     int nbytes;
+xrealloc (     void *pointer,
+         int nbytes)
+
 {
   void *temp;
 
@@ -983,9 +993,9 @@ xrealloc (pointer, nbytes)
   return (temp);
 }
 
-memory_error (callers_name, bytes_wanted)
-     char *callers_name;
-     int bytes_wanted;
+void memory_error (     char *callers_name,
+                  int bytes_wanted)
+
 {
   char printable_string[80];
 
@@ -998,7 +1008,7 @@ memory_error (callers_name, bytes_wanted)
 }
 
 /* Tell the user how to use this program. */
-usage ()
+void usage ()
 {
   fprintf (stderr, "Usage: %s [options] texinfo-file...\n\
 \n\
@@ -1031,8 +1041,8 @@ The options are:\n\
                       either be `separate' to place footnotes in their own\n\
                       node, or `end', to place the footnotes at the end of\n\
                       the node in which they are defined (the default).\n\
-`--amiga'             to convert to AmigaGuide® hypertext format \n\
-`--amiga-39'          to convert to AmigaGuide® V39 hypertext format \n\n",
+`--amiga'             to convert to AmigaGuide? hypertext format \n\
+`--amiga-39'          to convert to AmigaGuide? V39 hypertext format \n\n",
 	   progname, paragraph_start_indent,
 	   fill_column, max_error_level, reference_warning_limit);
   exit (FATAL);
@@ -1053,11 +1063,10 @@ typedef struct generic_list
    of the chain.  You should always assign the output value of this
    function to something, or you will lose the chain. */
 GENERIC_LIST *
-reverse_list (list)
-     register GENERIC_LIST *list;
+reverse_list (GENERIC_LIST *list)
 {
-  register GENERIC_LIST *next;
-  register GENERIC_LIST *prev = (GENERIC_LIST *) NULL;
+   GENERIC_LIST *next;
+   GENERIC_LIST *prev = (GENERIC_LIST *) NULL;
 
   while (list)
     {
@@ -1079,8 +1088,7 @@ reverse_list (list)
 /* Find and load the file named FILENAME.  Return a pointer to
    the loaded file, or NULL if it can't be loaded. */
 char *
-find_and_load (filename)
-     char *filename;
+find_and_load (char *filename)
 {
   struct stat fileinfo;
   int file = -1, n, i, count = 0;
@@ -1145,7 +1153,7 @@ find_and_load (filename)
 }
 
 /* Save the state of the current input file. */
-pushfile ()
+void pushfile ()
 {
   FSTACK *newstack = (FSTACK *) xmalloc (sizeof (FSTACK));
   newstack->filename = input_filename;
@@ -1160,7 +1168,7 @@ pushfile ()
 }
 
 /* Make the current file globals be what is on top of the file stack. */
-popfile ()
+void popfile ()
 {
   extern int executing_string;
   FSTACK *temp = filestack;
@@ -1186,7 +1194,7 @@ popfile ()
 }
 
 /* Flush all open files on the file stack. */
-flush_file_stack ()
+void flush_file_stack ()
 {
   while (filestack)
     {
@@ -1200,7 +1208,7 @@ int node_filename_stack_index = 0;
 int node_filename_stack_size = 0;
 char **node_filename_stack = (char **) NULL;
 
-push_node_filename ()
+void push_node_filename ()
 {
   if (node_filename_stack_index + 1 > node_filename_stack_size)
     {
@@ -1219,7 +1227,7 @@ push_node_filename ()
   node_filename_stack_index++;
 }
 
-pop_node_filename ()
+void pop_node_filename ()
 {
   node_filename = node_filename_stack[--node_filename_stack_index];
 }
@@ -1228,10 +1236,9 @@ pop_node_filename ()
    filename without the path information, or extensions.
    This conses up a new string. */
 char *
-filename_part (filename)
-     char *filename;
+filename_part (char *filename)
 {
-  register int i = strlen (filename) - 1;
+   int i = strlen (filename) - 1;
 
 #if !defined (AMIGA)
 
@@ -1263,12 +1270,11 @@ filename_part (filename)
 
 /* Return the pathname part of filename.  This can be NULL. */
 char *
-pathname_part (filename)
-     char *filename;
+pathname_part (char *filename)
 {
   char *expand_filename ();
   char *result = (char *) NULL;
-  register int i;
+   int i;
 
   filename = expand_filename (filename, "");
 
@@ -1302,8 +1308,7 @@ pathname_part (filename)
 
 /* Return the expansion of FILENAME. */
 char *
-expand_filename (filename, input_name)
-     char *filename, *input_name;
+expand_filename (char *filename, char **input_name)
 {
   char *full_pathname ();
 
@@ -1367,8 +1372,7 @@ expand_filename (filename, input_name)
 
 /* Return the full path to FILENAME. */
 char *
-full_pathname (filename)
-     char *filename;
+full_pathname (char *filename)
 {
 #if !defined(AMIGA)
 
@@ -1450,46 +1454,60 @@ full_pathname (filename)
 /*                                                                  */
 /* **************************************************************** */
 
+void remember_error ();
+
 /* Number of errors encountered. */
 int errors_printed = 0;
 
 /* Print the last error gotten from the file system. */
-fs_error (filename)
-     char *filename;
+int fs_error (char *filename)
 {
   remember_error ();
   perror (filename);
   return (0);
 }
 
+#define FOWARD_VARGS(lastParam, function) \
+{ \
+    va_list myargs; \
+    va_start(myargs, lastParam); \
+    function(lastParam, myargs);\
+    va_end(myargs); \
+}
+
+void printToStderr(const char *format, ...)
+{
+    va_list myargs;
+    va_start(myargs, format);
+    fprintf (stderr, format, myargs);
+    va_end(myargs);
+}
+
 /* Print an error message, and return false. */
-error (format, arg1, arg2, arg3, arg4, arg5)
-     char *format;
+int error (char *format, ...)
 {
   remember_error ();
-  fprintf (stderr, format, arg1, arg2, arg3, arg4, arg5);
+  FOWARD_VARGS(format, printToStderr)
   fprintf (stderr, "\n");
   return ((int) 0);
 }
 
 /* Just like error (), but print the line number as well. */
-line_error (format, arg1, arg2, arg3, arg4, arg5)
-     char *format;
+line_error (char *format, ...)
 {
   remember_error ();
   fprintf (stderr, "%s:%d: ", input_filename, line_number);
-  fprintf (stderr, format, arg1, arg2, arg3, arg4, arg5);
+  FOWARD_VARGS(format, printToStderr)
   fprintf (stderr, ".\n");
   return ((int) 0);
 }
 
-warning (format, arg1, arg2, arg3, arg4, arg5)
-     char *format;
+warning (char *format, ...)
 {
   if (print_warnings)
     {
       fprintf (stderr, "%s:%d: Warning: ", input_filename, line_number);
-      fprintf (stderr, format, arg1, arg2, arg3, arg4, arg5);
+      FOWARD_VARGS(format, printToStderr)
       fprintf (stderr, ".\n");
     }
   return ((int) 0);
@@ -1499,7 +1517,7 @@ warning (format, arg1, arg2, arg3, arg4, arg5)
    error printed, then tell them which program is printing them.
    If more than max_error_level have been printed, then exit the
    program. */
-remember_error ()
+void remember_error ()
 {
   errors_printed++;
   if (max_error_level && (errors_printed > max_error_level))
@@ -1549,15 +1567,13 @@ read_token ()
 
 /* Return non-zero if CHARACTER is self-delimiting. */
 int
-self_delimiting (character)
-     int character;
+self_delimiting (int character)
 {
   return (member (character, "{}:.@*'`,!?; \n"));
 }
 
 /* Clear whitespace from the front and end of string. */
-canon_white (string)
-     char *string;
+void canon_white (char *string)
 {
   int len = strlen (string);
   int x;
@@ -1582,8 +1598,7 @@ canon_white (string)
 }
 
 /* Bash STRING, replacing all whitespace with just one space. */
-fix_whitespace (string)
-     char *string;
+void fix_whitespace (char *string)
 {
   char *temp = (char *) xmalloc (strlen (string) + 1);
   int string_index = 0;
@@ -1612,8 +1627,7 @@ fix_whitespace (string)
 
 /* Discard text until the desired string is found.  The string is
    included in the discarded text. */
-discard_until (string)
-     char *string;
+void discard_until (char *string)
 {
   int temp = search_forward (string, input_text_offset);
 
@@ -1646,8 +1660,7 @@ discard_until (string)
    On exit input_text_offset is after the match string.
    Return the offset where the string starts. */
 int
-get_until (match, string)
-     char *match, **string;
+get_until (char *match, char **string)
 {
   int len, current_point, x, new_point, tem;
 
@@ -1680,8 +1693,7 @@ get_until (match, string)
 
 /* Read characters from the file until we are at MATCH or end of line.
    Place the characters read into STRING.  */
-get_until_in_line (match, string)
-     char *match, **string;
+void get_until_in_line (char *match, char **string)
 {
   int real_bottom, temp;
 
@@ -1696,8 +1708,7 @@ get_until_in_line (match, string)
   size_of_input_text = real_bottom;
 }
 
-get_rest_of_line (string)
-     char **string;
+void get_rest_of_line (char **string)
 {
   get_until ("\n", string);
   canon_white (*string);
@@ -1711,7 +1722,7 @@ get_rest_of_line (string)
 
 /* Backup the input pointer to the previous character, keeping track
    of the current line number. */
-backup_input_pointer ()
+void backup_input_pointer ()
 {
   if (input_text_offset)
     {
@@ -1723,8 +1734,7 @@ backup_input_pointer ()
 
 /* Read characters from the file until we are at MATCH or closing brace.
    Place the characters read into STRING.  */
-get_until_in_braces (match, string)
-     char *match, **string;
+void get_until_in_braces (char *match, char **string)
 {
   int i, brace = 0;
   int match_len = strlen (match);
@@ -1769,12 +1779,11 @@ static char *suffixes[] =
   (char *) NULL
 };
 
-convert (name)
-     char *name;
+void convert (char *name)
 {
   char *real_output_filename, *expand_filename (), *filename_part ();
   char *filename = (char *) xmalloc (strlen (name) + 50);
-  register int i;
+   int i;
 
   init_tag_table ();
   init_indices ();
@@ -1848,9 +1857,9 @@ convert (name)
       else
 	{
 	  if (!amiga_guide_39)
-	    printf ("Making AmigaGuide® file `%s' from `%s'.\n", output_filename, name);
+	    printf ("Making AmigaGuide? file `%s' from `%s'.\n", output_filename, name);
 	  else
-	    printf ("Making AmigaGuide® V39 file `%s' from `%s'.\n", output_filename, name);
+	    printf ("Making AmigaGuide? V39 file `%s' from `%s'.\n", output_filename, name);
 	}
     }
   else
@@ -1911,7 +1920,7 @@ convert (name)
 	  if (amiga_guide)
 	    add_word_args ("\n@Width %d\n", fill_column);
 
-	  add_word_args ("\n\nThis is the AmigaGuide® file %s, produced by Makeinfo-%d.%d from ",
+	  add_word_args ("\n\nThis is the AmigaGuide? file %s, produced by Makeinfo-%d.%d from ",
 			 output_filename, major_version, minor_version);
 	  add_word_args ("\nthe input file %s.\n\n", input_filename);
 
@@ -1964,8 +1973,7 @@ finished:
     }
 }
 
-free_and_clear (pointer)
-     char **pointer;
+void free_and_clear (char **pointer)
 {
   if ((*pointer) != (char *) NULL)
     {
@@ -1975,7 +1983,7 @@ free_and_clear (pointer)
 }
 
  /* Initialize some state. */
-init_internals ()
+void init_internals ()
 {
   free_and_clear (&current_node);
   free_and_clear (&output_filename);
@@ -1988,7 +1996,7 @@ init_internals ()
   in_menu = 0;
 }
 
-init_paragraph ()
+void init_paragraph ()
 {
   free_and_clear (&output_paragraph);
   output_paragraph = (unsigned char *) xmalloc (paragraph_buffer_len);
@@ -2005,7 +2013,7 @@ init_paragraph ()
    remembering things like open braces and the current file position on a
    stack, and when the corresponding close brace is found, you can call
    the function with the proper arguments. */
-reader_loop ()
+void reader_loop ()
 {
   int character;
   int done = 0;
@@ -2054,7 +2062,7 @@ reader_loop ()
          is blank.  If so, advance to the carriage return. */
       if (whitespace (character))
 	{
-	  register int i = input_text_offset + 1;
+	   int i = input_text_offset + 1;
 
 	  while (i < size_of_input_text && whitespace (input_text[i]))
 	    i++;
@@ -2136,10 +2144,9 @@ reader_loop ()
    is found, return a pointer to the data structure.  Otherwise
    return (-1). */
 COMMAND *
-get_command_entry (string)
-     char *string;
+get_command_entry (char *string)
 {
-  register int i;
+   int i;
 
   for (i = 0; CommandTable[i].name; i++)
     if (strcmp (CommandTable[i].name, string) == 0)
@@ -2158,7 +2165,7 @@ get_command_entry (string)
 
 /* input_text_offset is right at the command prefix character.
    Read the next token to determine what to do. */
-read_command ()
+void read_command ()
 {
   COMMAND *entry;
   input_text_offset++;
@@ -2196,10 +2203,9 @@ read_command ()
 
 /* Return the string which invokes PROC; a pointer to a function. */
 char *
-find_proc_name (proc)
-     FUNCTION *proc;
+find_proc_name (FUNCTION *proc)
 {
-  register int i;
+   int i;
 
   for (i = 0; CommandTable[i].name; i++)
     if (proc == CommandTable[i].proc)
@@ -2207,13 +2213,12 @@ find_proc_name (proc)
   return ("NO_NAME!");
 }
 
-init_brace_stack ()
+void init_brace_stack ()
 {
   brace_stack = (BRACE_ELEMENT *) NULL;
 }
 
-remember_brace (proc)
-     FUNCTION *proc;
+void remember_brace (FUNCTION *proc)
 {
   if (curchar () != '{')
     line_error ("@%s expected `{..}'", command);
@@ -2224,9 +2229,8 @@ remember_brace (proc)
 
 /* Remember the current output position here.  Save PROC
    along with it so you can call it later. */
-remember_brace_1 (proc, position)
-     FUNCTION *proc;
-     int position;
+void remember_brace_1 (FUNCTION *proc, int position)
+
 {
   BRACE_ELEMENT *new = (BRACE_ELEMENT *) xmalloc (sizeof (BRACE_ELEMENT));
   new->next = brace_stack;
@@ -2238,7 +2242,7 @@ remember_brace_1 (proc, position)
 
 /* Pop the top of the brace stack, and call the associated function
    with the args END and POS. */
-pop_and_call_brace ()
+void pop_and_call_brace ()
 {
   BRACE_ELEMENT *temp;
   FUNCTION *proc;
@@ -2259,7 +2263,7 @@ pop_and_call_brace ()
    I used to think that this happens for commands that don't take arguments
    in braces, but that was wrong because of things like @code{foo @@}.  So now
    I only detect it at the beginning of nodes. */
-discard_braces ()
+void discard_braces ()
 {
   int temp_line_number = line_number;
   char *proc_name;
@@ -2277,8 +2281,7 @@ discard_braces ()
     }
 }
 
-get_char_len (character)
-     int character;
+int get_char_len (int character)
 {
   /* Return the printed length of the character. */
   int len;
@@ -2307,17 +2310,32 @@ get_char_len (character)
 }
 
 
-add_word_args (format, arg1, arg2, arg3, arg4, arg5)
-     char *format;
+
+int add_word_args (const char *format, ...)
 {
-  char buffer[1000];
-  sprintf (buffer, format, arg1, arg2, arg3, arg4, arg5);
-  add_word (buffer);
+    int ret;
+
+    /* Declare a va_list type variable */
+    va_list myargs;
+
+    /* Initialise the va_list variable with the ... after fmt */
+
+    va_start(myargs, format);
+
+    /* Forward the '...' to vprintf */
+    static char buffer[10000];
+    sprintf (buffer, format, myargs);
+    add_word (buffer);
+
+    /* Clean up the va_list */
+    va_end(myargs);
+
+    return ret;
+
 }
 
 /* Add STRING to output_paragraph. */
-add_word (string)
-     char *string;
+void add_word (char *string)
 {
   while (*string)
     add_char (*string++);
@@ -2343,8 +2361,7 @@ int insertion_paragraph_closed = 0;
 
 /* Add the character to the current paragraph.  If filling_enabled is
    non-zero, then do filling as well. */
-add_char (character)
-     int character;
+void add_char (int character)
 {
   /* If we are avoiding outputting headers, and we are currently
      in a menu, then simply return. */
@@ -2494,7 +2511,7 @@ add_char (character)
 			    /* We have to shift any markers that are in
                                front of the wrap point. */
 			    {
-			      register BRACE_ELEMENT *stack = brace_stack;
+			       BRACE_ELEMENT *stack = brace_stack;
 
 			      while (stack)
 				{
@@ -2550,8 +2567,7 @@ add_char (character)
 }
 
 /* Insert CHARACTER into OUTPUT_PARAGRAPH. */
-insert (character)
-     int character;
+void insert (int character)
 {
   output_paragraph[output_paragraph_offset++] = character;
   if (output_paragraph_offset == paragraph_buffer_len)
@@ -2564,8 +2580,7 @@ insert (character)
 /* Remove upto COUNT characters of whitespace from the
    the current output line.  If COUNT is less than zero,
    then remove until none left. */
-kill_self_indent (count)
-     int count;
+void kill_self_indent (int count)
 {
   /* Handle infinite case first. */
   if (count < 0)
@@ -2593,20 +2608,20 @@ kill_self_indent (count)
 static int flushing_ignored = 0;
 
 /* Prevent calls to flush_output () from having any effect. */
-inhibit_output_flushing ()
+void inhibit_output_flushing ()
 {
   flushing_ignored++;
 }
 
 /* Allow calls to flush_output () to write the paragraph data. */
-uninhibit_output_flushing ()
+void uninhibit_output_flushing ()
 {
   flushing_ignored--;
 }
 
-flush_output ()
+void flush_output ()
 {
-  register int i;
+   int i;
 
   if (!output_paragraph_offset || flushing_ignored)
     return;
@@ -2647,13 +2662,13 @@ flush_output ()
 int paragraph_spacing = DEFAULT_PARAGRAPH_SPACING;
 
 /* Close the current paragraph, leaving no blank lines between them. */
-close_single_paragraph ()
+void close_single_paragraph ()
 {
   close_paragraph_with_lines (0);
 }
 
 /* Close a paragraph after an insertion has ended. */
-close_insertion_paragraph ()
+void close_insertion_paragraph ()
 {
   if (!insertion_paragraph_closed)
     {
@@ -2689,8 +2704,7 @@ close_insertion_paragraph ()
   insertion_paragraph_closed = 1;
 }
 
-close_paragraph_with_lines (lines)
-     int lines;
+void close_paragraph_with_lines (int lines)
 {
   int old_spacing = paragraph_spacing;
   paragraph_spacing = lines;
@@ -2699,16 +2713,16 @@ close_paragraph_with_lines (lines)
 }
 
 /* Close the currently open paragraph. */
-close_paragraph ()
+void close_paragraph ()
 {
-  register int i;
+   int i;
 
   /* The insertion paragraph is no longer closed. */
   insertion_paragraph_closed = 0;
 
   if (paragraph_is_open && !must_start_paragraph)
     {
-      register int tindex, c;
+       int tindex, c;
 
       tindex = output_paragraph_offset;
 
@@ -2754,14 +2768,14 @@ close_paragraph ()
 }
 
 /* Make the last line just read look as if it were only a newline. */
-ignore_blank_line ()
+void ignore_blank_line ()
 {
   last_inserted_character = '\n';
   last_char_was_newline = 1;
 }
 
 /* Align the end of the text in output_paragraph with fill_column. */
-do_flush_right_indentation ()
+void do_flush_right_indentation ()
 {
   int temp_fill_column = fill_column;
   char *temp;
@@ -2775,7 +2789,7 @@ do_flush_right_indentation ()
 
       if (output_paragraph_offset < fill_column)
 	{
-	  register int i;
+	   int i;
 
 	  if (fill_column >= paragraph_buffer_len)
 	    output_paragraph =
@@ -2799,7 +2813,7 @@ do_flush_right_indentation ()
 }
 
 /* Begin a new paragraph. */
-start_paragraph ()
+void start_paragraph ()
 {
   /* First close existing one. */
   if (paragraph_is_open)
@@ -2845,10 +2859,9 @@ start_paragraph ()
 }
 
 /* Insert the indentation specified by AMOUNT. */
-indent (amount)
-     int amount;
+void indent (int amount)
 {
-  register BRACE_ELEMENT *elt = brace_stack;
+   BRACE_ELEMENT *elt = brace_stack;
 
   /* For every START_POS saved within the brace stack which will be affected
       by this indentation, bump that start pos forward. */
@@ -2866,9 +2879,7 @@ indent (amount)
 
 /* Search forward for STRING in input_text.
    FROM says where where to start. */
-search_forward (string, from)
-     char *string;
-     int from;
+int  search_forward (char *string, int from)
 {
   int len = strlen (string);
 
@@ -2884,8 +2895,7 @@ search_forward (string, from)
 /* Whoops, Unix doesn't have stricmp. */
 
 /* Case independent string compare. */
-stricmp (string1, string2)
-     char *string1, *string2;
+int stricmp (char *string1, char *string2)
 {
   char ch1, ch2;
 
@@ -2940,14 +2950,13 @@ INSERTION_ELT;
 
 INSERTION_ELT *insertion_stack = (INSERTION_ELT *) NULL;
 
-init_insertion_stack ()
+void init_insertion_stack ()
 {
   insertion_stack = (INSERTION_ELT *) NULL;
 }
 
 /* Return the type of the current insertion. */
-enum insertion_type
-current_insertion_type ()
+enum insertion_type current_insertion_type ()
 {
   if (!insertion_level)
     return (bad_type);
@@ -2957,11 +2966,10 @@ current_insertion_type ()
 
 /* Return a pointer to the string which is the function to wrap around
    items. */
-char *
-current_item_function ()
+char * current_item_function ()
 {
-  register int level, done;
-  register INSERTION_ELT *elt;
+   int level, done;
+   INSERTION_ELT *elt;
 
   level = insertion_level;
   elt = insertion_stack;
@@ -2991,8 +2999,7 @@ current_item_function ()
     return (elt->item_function);
 }
 
-char *
-get_item_function ()
+char * get_item_function ()
 {
   char *item_function;
   get_rest_of_line (&item_function);
@@ -3002,9 +3009,9 @@ get_item_function ()
 }
 
  /* Push the state of the current insertion on the stack. */
-push_insertion (type, item_function)
-     enum insertion_type type;
-     char *item_function;
+void push_insertion (     enum insertion_type type,
+               char *item_function)
+
 {
   INSERTION_ELT *new = (INSERTION_ELT *) xmalloc (sizeof (INSERTION_ELT));
 
@@ -3021,7 +3028,7 @@ push_insertion (type, item_function)
 
  /* Pop the value on top of the insertion stack into the
     global variables. */
-pop_insertion ()
+void pop_insertion ()
 {
   INSERTION_ELT *temp = insertion_stack;
 
@@ -3039,9 +3046,7 @@ pop_insertion ()
 
  /* Return a pointer to the print name of this
     enumerated type. */
-char *
-insertion_type_pname (type)
-     enum insertion_type type;
+char * insertion_type_pname (enum insertion_type type)
 {
   if ((int) type < (int) bad_type)
     return (insertion_type_names[(int) type]);
@@ -3052,8 +3057,7 @@ insertion_type_pname (type)
 /* Return the insertion_type associated with NAME.
    If the type is not one of the known ones, return BAD_TYPE. */
 enum insertion_type
-find_type_from_name (name)
-     char *name;
+find_type_from_name (char *name)
 {
   int index = 0;
   while (index < (int) bad_type)
@@ -3065,13 +3069,13 @@ find_type_from_name (name)
   return (bad_type);
 }
 
-do_nothing ()
+void do_nothing ()
 {
 }
 
 int
-defun_insertion (type)
-     enum insertion_type type;
+defun_insertion (enum insertion_type type)
+
 {
   return
     ((type == deffn)
@@ -3112,8 +3116,7 @@ int current_enumval = 1;
 int current_enumtype = ENUM_DIGITS;
 char *enumeration_arg = (char *) NULL;
 
-start_enumerating (at, type)
-     int at, type;
+void start_enumerating (int at, int type)
 {
   if ((enumstack_offset + 1) == max_stack_depth)
     {
@@ -3127,7 +3130,7 @@ start_enumerating (at, type)
   current_enumtype = type;
 }
 
-stop_enumerating ()
+void stop_enumerating ()
 {
   --enumstack_offset;
   if (enumstack_offset < 0)
@@ -3138,7 +3141,7 @@ stop_enumerating ()
 }
 
 /* Place a letter or digits into the output stream. */
-enumerate_item ()
+void enumerate_item ()
 {
   char temp[10];
 
@@ -3162,8 +3165,7 @@ enumerate_item ()
 /* This is where the work for all the "insertion" style
    commands is done.  A huge switch statement handles the
    various setups, and generic code is on both sides. */
-begin_insertion (type)
-     enum insertion_type type;
+void begin_insertion (enum insertion_type type)
 {
   int no_discard = 0;
 
@@ -3328,8 +3330,7 @@ begin_insertion (type)
    the value currently on top of the stack.
    Otherwise, if TYPE doesn't match the top of the insertion stack,
    give error. */
-end_insertion (type)
-     enum insertion_type type;
+void end_insertion (enum insertion_type type)
 {
   enum insertion_type temp_type;
 
@@ -3424,7 +3425,7 @@ end_insertion (type)
    code that creates such boundaries, you should call discard_insertions ()
    before doing anything else.  It prints the errors for you, and cleans up
    the insertion stack. */
-discard_insertions ()
+void discard_insertions ()
 {
   int real_line_number = line_number;
   while (insertion_stack)
@@ -3457,7 +3458,7 @@ insert_self ()
 }
 
 /* Force a line break in the output. */
-cm_asterisk ()
+int cm_asterisk ()
 {
   close_single_paragraph ();
 #if !defined (ASTERISK_NEW_PARAGRAPH)
@@ -3466,15 +3467,13 @@ cm_asterisk ()
 }
 
 /* Insert ellipsis. */
-cm_dots (arg)
-     int arg;
+int cm_dots (int arg)
 {
   if (arg == START)
     add_word ("...");
 }
 
-cm_bullet (arg)
-     int arg;
+cm_bullet (int arg)
 {
 
   if (arg == START)
@@ -3489,30 +3488,27 @@ cm_bullet (arg)
       add_char ('*');
 }
 
-cm_minus (arg)
-     int arg;
+cm_minus (int arg)
 {
   if (arg == START)
     add_char ('-');
 }
 
 /* Insert "TeX". */
-cm_TeX (arg)
-     int arg;
+cm_TeX (int arg)
 {
   if (arg == START)
     add_word ("TeX");
 }
 
-cm_copyright (arg)
-     int arg;
+cm_copyright (int arg)
+
 {
   if (arg == START)
     add_word ("(C)");
 }
 
-cm_today (arg)
-     int arg;
+cm_today (int arg)
 {
   static char *months[12] =
   {"January", "February", "March", "April", "May", "June", "July",
@@ -3529,8 +3525,7 @@ cm_today (arg)
     }
 }
 
-cm_code (arg)
-     int arg;
+cm_code (int arg)
 {
   extern int printing_index;
 
@@ -3563,40 +3558,35 @@ cm_code (arg)
     }
 }
 
-cm_samp (arg)
-     int arg;
+cm_samp (int arg)
+
 {
   cm_code (arg);
 }
 
-cm_file (arg)
-     int arg;
+cm_file (int arg)
 {
   cm_code (arg);
 }
 
-cm_kbd (arg)
-     int arg;
+cm_kbd (int arg)
 {
   cm_code (arg);
 }
 
-cm_key (arg)
-     int arg;
+cm_key (int arg)
 {
 }
 
 /* Convert the character at position into CTL. */
-cm_ctrl (arg, position)
-     int arg, position;
+cm_ctrl (int arg, int position)
 {
   if (arg == END)
     output_paragraph[position - 1] = CTL (output_paragraph[position]);
 }
 
 /* Small Caps in makeinfo just does all caps. */
-cm_sc (arg, start_pos, end_pos)
-     int arg, start_pos, end_pos;
+cm_sc (int arg, int start_pos, int end_pos)
 {
   if (arg == END)
     {
@@ -3610,8 +3600,7 @@ cm_sc (arg, start_pos, end_pos)
 }
 
 /* @var in makeinfo just uppercases the text. */
-cm_var (arg, start_pos, end_pos)
-     int arg, start_pos, end_pos;
+cm_var (int arg, int start_pos, int end_pos)
 {
 
   extern int printing_index;
@@ -3639,8 +3628,7 @@ cm_var (arg, start_pos, end_pos)
     }
 }
 
-cm_dfn (arg, position)
-     int arg, position;
+cm_dfn (int arg, int position)
 {
   extern int printing_index;
 
@@ -3657,8 +3645,7 @@ cm_dfn (arg, position)
     }
 }
 
-cm_emph (arg)
-     int arg;
+cm_emph (int arg)
 {
   extern int printing_index;
 
@@ -3674,14 +3661,12 @@ cm_emph (arg)
     add_char ('*');
 }
 
-cm_strong (arg, position)
-     int arg, position;
+cm_strong (int arg, int position)
 {
   cm_emph (arg);
 }
 
-cm_cite (arg, position)
-     int arg, position;
+cm_cite (int arg, int position)
 {
   if (arg == START)
     add_word ("`");
@@ -3690,8 +3675,7 @@ cm_cite (arg, position)
 }
 
 /* Current text is italicized. */
-cm_italic (arg, start, end)
-     int arg, start, end;
+cm_italic (int arg, int start, int end)
 {
 
   extern int printing_index;
@@ -3706,29 +3690,26 @@ cm_italic (arg, start, end)
 }
 
 /* Current text is highlighted. */
-cm_bold (arg, start, end)
-     int arg, start, end;
+cm_bold (int arg, int start, int end)
 {
-  cm_italic (arg);
+  cm_italic (arg, start, end);
 }
 
 /* Current text is in roman font. */
-cm_roman (arg, start, end)
-     int arg, start, end;
+cm_roman (int arg, int start, int end)
 {
 }
 
 /* Current text is in roman font. */
-cm_titlefont (arg, start, end)
-     int arg, start, end;
+cm_titlefont (int arg, int start, int end)
+
 {
 }
 
 /* Italicize titles. */
-cm_title (arg, start, end)
-     int arg, start, end;
+cm_title (int arg, int start, int end)
 {
-  cm_italic (arg);
+  cm_italic (arg, start, end);
 }
 
 /* @refill is a NOP. */
@@ -3737,8 +3718,7 @@ cm_refill ()
 }
 
 /* Prevent the argument from being split across two lines. */
-cm_w (arg, start, end)
-     int arg, start, end;
+cm_w (int arg, int start, int end)
 {
   if (arg == START)
     non_splitting_words++;
@@ -3749,8 +3729,7 @@ cm_w (arg, start, end)
 
 /* Explain that this command is obsolete, thus the user shouldn't
    do anything with it. */
-cm_obsolete (arg, start, end)
-     int arg, start, end;
+cm_obsolete (int arg, int start, int end)
 {
   if (arg == START)
     warning ("The command `@%s' is obsolete", command);
@@ -3759,8 +3738,7 @@ cm_obsolete (arg, start, end)
 /* Insert the text following input_text_offset up to the end of the line
    in a new, separate paragraph.  Directly underneath it, insert a
    line of WITH_CHAR, the same length of the inserted text. */
-insert_and_underscore (with_char)
-     int with_char;
+void insert_and_underscore (int with_char)
 {
   int len, i, old_no_indent;
   int starting_pos, ending_pos;
@@ -3889,10 +3867,9 @@ cm_lowersections ()
 
 /* Return an integer which identifies the type section present in TEXT. */
 int
-what_section (text)
-     char *text;
+what_section (char *text)
 {
-  register int i, j;
+   int i, j;
   char *t;
 
 find_section_command:
@@ -3999,7 +3976,7 @@ cm_top ()
                a level of this section - 1. */
 	    if (this_section != -1)
 	      {
-		register int i;
+		 int i;
 
 		for (i = 0; section_alist[i].name; i++)
 		  if (strcmp (section_alist[i].name, "Top") == 0)
@@ -4018,8 +3995,7 @@ cm_top ()
 char *scoring_characters = "*=-.";
 
 void
-sectioning_underscore (command)
-     char *command;
+sectioning_underscore (char *command)
 {
   char character;
   int level;
@@ -4172,8 +4148,7 @@ write_tag_table_indirect ()
 
 /* Write out the contents of the existing tag table.
    INDIRECT_P says how to format the output. */
-write_tag_table_internal (indirect_p)
-     int indirect_p;
+void write_tag_table_internal (int indirect_p)
 {
   TAG_ENTRY *node = tag_table;
   int old_indent = no_indent;
@@ -4224,10 +4199,9 @@ get_node_token ()
 
 /* Given a node name in STRING, remove double @ signs, replacing them
    with just one. Convert "top" and frients into "Top".*/
-normalize_node_name (string)
-     char *string;
+normalize_node_name (char *string)
 {
-  register int i, l = strlen (string);
+   int i, l = strlen (string);
 
   for (i = 0; i < l; i++)
     {
@@ -4261,8 +4235,7 @@ normalize_node_name (string)
 /* Look up NAME in the tag table, and return the associated
    tag_entry.  If the node is not in the table return NULL. */
 TAG_ENTRY *
-find_node (name)
-     char *name;
+find_node (char *name)
 {
   TAG_ENTRY *tag = tag_table;
 
@@ -4276,14 +4249,12 @@ find_node (name)
 }
 
 /* Remember NODE and associates. */
-remember_node (node, prev, next, up, position, line_no, no_warn)
-     char *node, *prev, *next, *up;
-     int position, line_no, no_warn;
+void remember_node (char *node, char *prev, char *next, char *up, int position, int line_no, int no_warn)
 {
   /* Check for existence of this tag already. */
   if (validating)
     {
-      register TAG_ENTRY *tag = find_node (node);
+       TAG_ENTRY *tag = find_node (node);
       if (tag)
 	{
 	  line_error ("Node `%s' multiply defined (%d is first definition)",
@@ -4592,16 +4563,16 @@ cm_node ()
 
    If the Next is different from the Next of the Up,
    then the Next node must have a Prev pointing at this node. */
-validate_file (filename, tag_table)
-     char *filename;
-     TAG_ENTRY *tag_table;
+void validate_file (     char *filename,
+              TAG_ENTRY *tag_table)
+
 {
   char *old_input_filename = input_filename;
   TAG_ENTRY *tags = tag_table;
 
   while (tags != (TAG_ENTRY *) NULL)
     {
-      register TAG_ENTRY *temp_tag;
+       TAG_ENTRY *temp_tag;
 
       input_filename = tags->filename;
       line_number = tags->line_no;
@@ -4789,10 +4760,10 @@ validate_file (filename, tag_table)
 }
 
 /* Return 1 if tag correctly validated, or 0 if not. */
-validate (tag, line, label)
-     char *tag;
-     int line;
-     char *label;
+void validate (     char *tag,
+         int line,
+         char *label)
+
 {
   TAG_ENTRY *result;
 
@@ -4821,9 +4792,8 @@ validate (tag, line, label)
    original file.  The new files have the same name as the original file
    with a "-num" attached.  SIZE is the largest number of bytes to allow
    in any single split file. */
-split_file (filename, size)
-     char *filename;
-     int size;
+void split_file (     char *filename,
+           int size)
 {
   char *root_filename, *root_pathname;
   char *the_file, *filename_part ();
@@ -5019,8 +4989,7 @@ split_file (filename, size)
    validation is on, then we use the contents of NODE_REFERENCES as a
    list of nodes to validate. */
 char *
-reftype_type_string (type)
-     enum reftype type;
+reftype_type_string (enum reftype type)
 {
   switch (type)
     {
@@ -5034,10 +5003,10 @@ reftype_type_string (type)
 }
 
 /* Remember this node name for later validation use. */
-remember_node_reference (node, line, type)
-     char *node;
-     int line;
-     enum reftype type;
+void remember_node_reference (     char *node,
+                        int line,
+                        enum reftype type)
+
 {
   NODE_REF *temp = (NODE_REF *) xmalloc (sizeof (NODE_REF));
 
@@ -5052,8 +5021,8 @@ remember_node_reference (node, line, type)
   node_references = temp;
 }
 
-validate_other_references (ref_list)
-     register NODE_REF *ref_list;
+validate_other_references (NODE_REF *ref_list)
+
 {
   char *old_input_filename = input_filename;
 
@@ -5069,9 +5038,9 @@ validate_other_references (ref_list)
 
 /* Find NODE in REF_LIST. */
 NODE_REF *
-find_node_reference (node, ref_list)
-     char *node;
-     register NODE_REF *ref_list;
+find_node_reference (     char *node,
+                    NODE_REF *ref_list)
+
 {
   while (ref_list)
     {
@@ -5084,7 +5053,7 @@ find_node_reference (node, ref_list)
 
 free_node_references ()
 {
-  register NODE_REF *list, *temp;
+   NODE_REF *list, *temp;
 
   list = node_references;
 
@@ -5105,8 +5074,7 @@ free_node_references ()
      input_text_offset is at the \n just before the line start. */
 #define menu_starter "* "
 char *
-glean_node_from_menu (remember_reference)
-     int remember_reference;
+glean_node_from_menu (int remember_reference)
 {
   int i, orig_offset = input_text_offset;
   char *nodename;
@@ -5158,10 +5126,9 @@ save_node:
 }
 
 static void
-isolate_nodename (nodename)
-     char *nodename;
+isolate_nodename (char *nodename)
 {
-  register int i, c;
+   int i, c;
   int paren_seen, paren;
 
   if (!nodename)
@@ -5335,7 +5302,7 @@ int px_ref_flag = 0;		/* Controls initial output string. */
 int ref_flag = 0;		/* Controls initial output string, too. */
 
 /* Make a cross reference. */
-cm_xref (arg)
+int cm_xref (int arg)
 {
   if (arg == START)
     {
@@ -5524,8 +5491,7 @@ cm_xref (arg)
     }
 }
 
-cm_pxref (arg)
-     int arg;
+cm_pxref (int arg)
 {
   if (arg == START)
     {
@@ -5539,8 +5505,7 @@ cm_pxref (arg)
     }
 }
 
-cm_ref (arg)
-     int arg;
+cm_ref (int arg)
 {
   if (arg == START)
     {
@@ -5550,8 +5515,7 @@ cm_ref (arg)
     }
 }
 
-cm_inforef (arg)
-     int arg;
+cm_inforef (int arg)
 {
   if (arg == START)
     {
@@ -5645,9 +5609,9 @@ cm_enumerate ()
 
 /* Start an enumeration insertion of type TYPE.  If the user supplied
    no argument on the line, then use DEFAULT_STRING as the initial string. */
-do_enumeration (type, default_string)
-     int type;
-     char *default_string;
+void do_enumeration (     int type,
+               char *default_string)
+
 {
   get_until_in_line (".", &enumeration_arg);
   canon_white (enumeration_arg);
@@ -5731,9 +5695,9 @@ DEFINE;
 DEFINE *defines = (DEFINE *) NULL;
 
 /* Add NAME to the list of `set' defines. */
-set (name, value)
-     char *name;
-     char *value;
+void set (     char *name,
+    char *value)
+
 {
   DEFINE *temp;
 
@@ -5753,10 +5717,9 @@ set (name, value)
 }
 
 /* Remove NAME from the list of `set' defines. */
-clear (name)
-     char *name;
+void clear (char *name)
 {
-  register DEFINE *temp, *last;
+   DEFINE *temp, *last;
 
   last = (DEFINE *) NULL;
   temp = defines;
@@ -5782,10 +5745,9 @@ clear (name)
 
 /* Return the value of NAME.  The return value is NULL if NAME is unset. */
 char *
-set_p (name)
-     char *name;
+set_p (char *name)
 {
-  register DEFINE *temp;
+   DEFINE *temp;
 
   for (temp = defines; temp; temp = temp->next)
     if (strcmp (temp->name, name) == 0)
@@ -5830,8 +5792,7 @@ cm_ifclear ()
   handle_variable (IFCLEAR);
 }
 
-cm_value (arg, start_pos, end_pos)
-     int arg, start_pos, end_pos;
+cm_value (int arg, int start_pos, int end_pos)
 {
   if (arg == END)
     {
@@ -5853,21 +5814,19 @@ cm_value (arg, start_pos, end_pos)
 }
 
 /* Set, clear, or conditionalize based on ACTION. */
-handle_variable (action)
-     int action;
+void handle_variable (int action)
 {
   char *name;
 
   get_rest_of_line (&name);
-  backup_input_pointer ();
+  void backup_input_pointer();
   canon_white (name);
   handle_variable_internal (action, name);
   free (name);
 }
 
-handle_variable_internal (action, name)
-     int action;
-     char *name;
+void handle_variable_internal (     int action,
+                         char *name)
 {
   char *temp;
   int delimiter, additional_text_present = 0;
@@ -6027,26 +5986,38 @@ int executing_string = 0;
 
 /* Execute the string produced by formatting the ARGs with FORMAT.  This
    is like submitting a new file with @include. */
-execute_string (format, arg1, arg2, arg3, arg4, arg5)
-     char *format;
-{
+void execute_string(const char *format, ...) {
   static char temp_string[4000];
-  sprintf (temp_string, format, arg1, arg2, arg3, arg4, arg5);
-  strcat (temp_string, "@bye\n");
-  pushfile ();
+
+  /* Declare a va_list type variable */
+  va_list myargs;
+
+  /* Initialise the va_list variable with the ... after fmt */
+
+  va_start(myargs, format);
+
+  /* Forward the '...' to vprintf */
+  sprintf(temp_string, format, myargs);
+
+  /* Clean up the va_list */
+  va_end(myargs);
+
+  strcat(temp_string, "@bye\n");
+
+  pushfile();
   input_text_offset = 0;
   input_text = temp_string;
-  input_filename = savestring (input_filename);
-  size_of_input_text = strlen (temp_string);
+  input_filename = savestring(input_filename);
+  size_of_input_text = strlen(temp_string);
 
   executing_string++;
-  reader_loop ();
+  reader_loop();
 
-  popfile ();
+  popfile();
   executing_string--;
 
-  free_and_clear (&command);
-  command = savestring ("not bye");
+  free_and_clear(&command);
+  command = savestring("not bye");
 }
 
 int itemx_flag = 0;
@@ -6243,8 +6214,7 @@ struct token_accumulator
 };
 
 void
-initialize_token_accumulator (accumulator)
-     struct token_accumulator *accumulator;
+initialize_token_accumulator (struct token_accumulator *accumulator)
 {
   (accumulator->length) = 0;
   (accumulator->index) = 0;
@@ -6252,9 +6222,8 @@ initialize_token_accumulator (accumulator)
 }
 
 void
-accumulate_token (accumulator, token)
-     struct token_accumulator *accumulator;
-     char *token;
+accumulate_token (     struct token_accumulator *accumulator,
+                 char *token)
 {
   if ((accumulator->index) >= (accumulator->length))
     {
@@ -6267,9 +6236,8 @@ accumulate_token (accumulator, token)
 }
 
 char *
-copy_substring (start, end)
-     char *start;
-     char *end;
+copy_substring (     char *start,
+               char *end)
 {
   char *result, *scan, *scan_result;
 
@@ -6287,12 +6255,11 @@ copy_substring (start, end)
 /* Given `string' pointing at an open brace, skip forward and return a
    pointer to just past the matching close brace. */
 int
-scan_group_in_string (string_pointer)
-     char **string_pointer;
+scan_group_in_string (char **string_pointer)
 {
-  register int c;
-  register char *scan_string;
-  register unsigned int level = 1;
+   int c;
+   char *scan_string;
+   unsigned int level = 1;
 
   scan_string = (*string_pointer) + 1;
 
@@ -6326,11 +6293,10 @@ scan_group_in_string (string_pointer)
    Contiguous whitespace characters are converted to a token
    consisting of a single space. */
 char **
-args_from_string (string)
-     char *string;
+args_from_string (char *string)
 {
   struct token_accumulator accumulator;
-  register char *scan_string = string;
+   char *scan_string = string;
   char *token_start, *token_end;
 
   initialize_token_accumulator (&accumulator);
@@ -6356,7 +6322,7 @@ args_from_string (string)
 	    scan_string += 1;
 	  else
 	    {
-	      register int c;
+	       int c;
 	      while (1)
 		{
 		  c = *scan_string++;
@@ -6405,7 +6371,7 @@ args_from_string (string)
 
 	  while (1)
 	    {
-	      register int c;
+	       int c;
 
 	      c = *scan_string++;
 
@@ -6436,9 +6402,8 @@ args_from_string (string)
 }
 
 void
-process_defun_args (defun_args, auto_var_p)
-     char **defun_args;
-     int auto_var_p;
+process_defun_args (     char **defun_args,
+                   int auto_var_p)
 {
   int pending_space = 0;
 
@@ -6475,8 +6440,7 @@ process_defun_args (defun_args, auto_var_p)
 }
 
 char *
-next_nonwhite_defun_arg (arg_pointer)
-     char ***arg_pointer;
+next_nonwhite_defun_arg (char ***arg_pointer)
 {
   char **scan = (*arg_pointer);
   char *arg = (*scan++);
@@ -6496,9 +6460,8 @@ next_nonwhite_defun_arg (arg_pointer)
    TYPE says which insertion this is.
    X_P says not to start a new insertion if non-zero. */
 void
-defun_internal (type, x_p)
-     enum insertion_type type;
-     int x_p;
+defun_internal (     enum insertion_type type,
+               int x_p)
 {
   enum insertion_type base_type;
   char **defun_args, **scan_args;
@@ -6814,7 +6777,7 @@ cm_sp ()
    This always ends the current paragraph. */
 cm_center ()
 {
-  register int i, start, length;
+   int i, start, length;
   int fudge_factor = 1;
   unsigned char *line;
 
@@ -6858,32 +6821,29 @@ cm_center ()
 }
 
 /* Show what an expression returns. */
-cm_result (arg)
-     int arg;
+cm_result (int arg)
 {
   if (arg == END)
     add_word ("=>");
 }
 
 /* What an expression expands to. */
-cm_expansion (arg)
-     int arg;
+cm_expansion (int arg)
 {
   if (arg == END)
     add_word ("==>");
 }
 
 /* Indicates two expressions are equivalent. */
-cm_equiv (arg)
-     int arg;
+cm_equiv (int arg)
 {
   if (arg == END)
     add_word ("==");
 }
 
 /* What an expression may print. */
-cm_print (arg)
-     int arg;
+cm_print (int arg)
+
 {
   if (arg == END)
     add_word ("-|");
@@ -6940,8 +6900,8 @@ cm_infoinclude ()
   /* In verbose mode we print info about including another file. */
   if (verbose_mode)
     {
-      register int i = 0;
-      register FSTACK *stack = filestack;
+       int i = 0;
+       FSTACK *stack = filestack;
 
       for (i = 0, stack = filestack; stack; stack = stack->next, i++);
 
@@ -6967,7 +6927,7 @@ cm_infoinclude ()
 }
 
 /* The other side of a malformed expression. */
-misplaced_brace ()
+void misplaced_brace ()
 {
   line_error ("Misplaced `}'");
 }
@@ -7052,7 +7012,7 @@ int defined_indices = 0;
 #define datatype_index 4
 #define key_index 5
 
-init_indices ()
+void init_indices ()
 {
   int i;
 
@@ -7087,10 +7047,9 @@ init_indices ()
 /* Find which element in the known list of indices has this name.
    Returns -1 if NAME isn't found. */
 int
-find_index_offset (name)
-     char *name;
+find_index_offset (char *name)
 {
-  register int i;
+   int i;
   for (i = 0; i < defined_indices; i++)
     if (name_index_alist[i] &&
 	strcmp (name, name_index_alist[i]->name) == 0)
@@ -7101,8 +7060,7 @@ find_index_offset (name)
 /* Return a pointer to the entry of (name . index) for this name.
    Return NULL if the index doesn't exist. */
 INDEX_ALIST *
-find_index (name)
-     char *name;
+find_index (char *name)
 {
   int offset = find_index_offset (name);
   if (offset > -1)
@@ -7113,8 +7071,7 @@ find_index (name)
 
 /* Given an index name, return the offset in the_indices of this index,
    or -1 if there is no such index. */
-translate_index (name)
-     char *name;
+int translate_index (char *name)
 {
   INDEX_ALIST *which = find_index (name);
 
@@ -7126,8 +7083,7 @@ translate_index (name)
 
 /* Return the index list which belongs to NAME. */
 INDEX_ELT *
-index_list (name)
-     char *name;
+index_list (char *name)
 {
   int which = translate_index (name);
   if (which < 0)
@@ -7137,8 +7093,7 @@ index_list (name)
 }
 
 /* Please release me, let me go... */
-free_index (index)
-     INDEX_ELT *index;
+void free_index (INDEX_ELT *index)
 {
   INDEX_ELT *temp;
 
@@ -7152,8 +7107,8 @@ free_index (index)
 }
 
 /* Flush an index by name. */
-undefindex (name)
-     char *name;
+void undefindex (char *name)
+
 {
   int i;
   int which = find_index_offset (name);
@@ -7174,11 +7129,10 @@ undefindex (name)
 
 /* Define an index known as NAME.  We assign the slot number.
    CODE if non-zero says to make this a code index. */
-defindex (name, code)
-     char *name;
-     int code;
+void defindex (     char *name,
+         int code)
 {
-  register int i, slot;
+   int i, slot;
 
   /* If it already exists, flush it. */
   undefindex (name);
@@ -7216,8 +7170,7 @@ defindex (name, code)
 }
 
 /* Add the arguments to the current index command to the index NAME. */
-index_add_arg (name)
-     char *name;
+void index_add_arg (char *name)
 {
   int which;
   char *index_entry;
@@ -7270,8 +7223,7 @@ cm_defcodeindex ()
   gen_defindex (1);
 }
 
-gen_defindex (code)
-     int code;
+void gen_defindex (int code)
 {
   char *name;
   get_rest_of_line (&name);
@@ -7294,10 +7246,9 @@ gen_defindex (code)
 
 /* Append LIST2 to LIST1.  Return the head of the list. */
 INDEX_ELT *
-index_append (head, tail)
-     INDEX_ELT *head, *tail;
+index_append (INDEX_ELT *head, INDEX_ELT *tail)
 {
-  register INDEX_ELT *t_head = head;
+   INDEX_ELT *t_head = head;
 
   if (!t_head)
     return (tail);
@@ -7380,8 +7331,7 @@ cm_tindex ()			/* Data Type index. */
 }
 
 /* Sorting the index. */
-index_element_compare (element1, element2)
-     INDEX_ELT **element1, **element2;
+int index_element_compare (INDEX_ELT **element1, INDEX_ELT **element2)
 {
   /* This needs to ignore leading non-text characters. */
   return (stricmp ((*element1)->entry, (*element2)->entry));
@@ -7392,8 +7342,7 @@ index_element_compare (element1, element2)
    pointer.  We call qsort because it's supposed to be fast.
    I think this looks bad. */
 INDEX_ELT **
-sort_index (index)
-     INDEX_ELT *index;
+sort_index (INDEX_ELT *index)
 {
   INDEX_ELT *temp = index;
   INDEX_ELT **array;
@@ -7560,10 +7509,9 @@ cm_printindex ()
 /*                                                                  */
 /* **************************************************************** */
 
-define_user_command (name, proc, needs_braces_p)
-     char *name;
-     FUNCTION *proc;
-     int needs_braces_p;
+void define_user_command (     char *name,
+                    FUNCTION *proc,
+                    int needs_braces_p)
 {
   int slot = user_command_array_len;
   user_command_array_len++;
@@ -7582,8 +7530,7 @@ define_user_command (name, proc, needs_braces_p)
 }
 
 /* Make ALIAS run the named FUNCTION.  Copies properties from FUNCTION. */
-define_alias (alias, function)
-     char *alias, *function;
+define_alias ( char *alias, char *function)
 {
 }
 
@@ -7596,8 +7543,7 @@ define_alias (alias, function)
 
    Returns 0 if successful, or non-zero if STRING isn't one of the above. */
 int
-set_paragraph_indent (string)
-     char *string;
+set_paragraph_indent (char *string)
 {
   if (strcmp (string, "asis") == 0)
     paragraph_start_indent = 0;
@@ -7648,8 +7594,7 @@ int footnote_count = 0;
 
 /* Set the footnote style based on he style identifier in STRING. */
 int
-set_footnote_style (string)
-     char *string;
+set_footnote_style (char *string)
 {
   if ((stricmp (string, "separate") == 0) ||
       (stricmp (string, "MN") == 0))
@@ -7687,8 +7632,7 @@ FN *pending_notes = (FN *) NULL;
 
 /* A method for remembering footnotes.  Note that this list gets output
    at the end of the current node. */
-remember_note (marker, note)
-     char *marker, *note;
+void remember_note (char *marker, char *note)
 {
   FN *temp = (FN *) xmalloc (sizeof (FN));
 
@@ -7700,7 +7644,7 @@ remember_note (marker, note)
 }
 
 /* How to get rid of existing footnotes. */
-free_pending_notes ()
+void free_pending_notes ()
 {
   FN *temp;
 
@@ -7864,7 +7808,7 @@ cm_footnote ()
 int already_outputting_pending_notes = 0;
 
 /* Output the footnotes.  We are at the end of the current node. */
-output_pending_notes ()
+void output_pending_notes ()
 {
   FN *footnote = pending_notes;
   char *Footnotestring;
@@ -7957,11 +7901,10 @@ int macro_list_size = 0;	/* Number of slots in total. */
 
 /* Return the macro definition of NAME or NULL if NAME is not defined. */
 MACRO_DEF *
-find_macro (name)
-     char *name;
+find_macro (char *name)
 {
-  register int i;
-  register MACRO_DEF *def;
+   int i;
+   MACRO_DEF *def;
 
   def = (MACRO_DEF *) NULL;
   for (i = 0; macro_list && (def = macro_list[i]); i++)
@@ -7977,12 +7920,12 @@ find_macro (name)
    exists with NAME, then a warning is produced, and that previous
    definition is overwritten. */
 void
-add_macro (name, definition, filename, lineno)
-     char *name, *definition;
-     char *filename;
-     int lineno;
+add_macro (     char *name, char *definition,
+          char *filename,
+          int lineno)
+
 {
-  register MACRO_DEF *def;
+   MACRO_DEF *def;
 
   def = find_macro (name);
 
@@ -8028,11 +7971,10 @@ add_macro (name, definition, filename, lineno)
    but it is also returned.  If there was no macro defined, NULL is
    returned. */
 MACRO_DEF *
-delete_macro (name)
-     char *name;
+delete_macro (char *name)
 {
-  register int i;
-  register MACRO_DEF *def;
+   int i;
+   MACRO_DEF *def;
 
   def = (MACRO_DEF *) NULL;
   for (i = 0; macro_list && (def = macro_list[i]); i++)
@@ -8047,8 +7989,7 @@ delete_macro (name)
 
 /* Execute the macro passed in DEF, a pointer to a MACRO_DEF. */
 void
-execute_macro (def)
-     MACRO_DEF *def;
+execute_macro (MACRO_DEF *def)
 {
 
   if (def != (MACRO_DEF *) NULL)
@@ -8075,7 +8016,7 @@ execute_macro (def)
 int
 cm_macro ()
 {
-  register int i;
+   int i;
   char *line, *name, *expansion;
 
   get_rest_of_line (&line);
@@ -8097,7 +8038,7 @@ cm_macro ()
 int
 cm_unmacro ()
 {
-  register int i;
+   int i;
   char *line, *name;
   MACRO_DEF *def;
 
@@ -8134,9 +8075,8 @@ cm_unmacro ()
    return the next one pointed to by INDEX, or NULL if there are no more.
    Advance INDEX to the character after the colon. */
 char *
-extract_colon_unit (string, index)
-     char *string;
-     int *index;
+extract_colon_unit (     char *string,
+                   int *index)
 {
   int i, start;
 
@@ -8185,9 +8125,8 @@ extract_colon_unit (string, index)
    If PATH is NULL, only the current directory is searched.
    If the file could not be found, return a NULL pointer. */
 char *
-get_file_info_in_path (filename, path, finfo)
-     char *filename, *path;
-     struct stat *finfo;
+get_file_info_in_path (     char *filename, char *path,
+                      struct stat *finfo)
 {
   char *dir;
   int result, index = 0;
