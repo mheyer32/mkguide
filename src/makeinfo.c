@@ -1475,12 +1475,9 @@ int fs_error (char *filename)
     va_end(myargs); \
 }
 
-void printToStderr(const char *format, ...)
+void printToStderr(const char *format, va_list arg )
 {
-    va_list myargs;
-    va_start(myargs, format);
-    fprintf (stderr, format, myargs);
-    va_end(myargs);
+    vfprintf (stderr, format, arg);
 }
 
 /* Print an error message, and return false. */
@@ -2324,7 +2321,7 @@ int add_word_args (const char *format, ...)
 
     /* Forward the '...' to vprintf */
     static char buffer[10000];
-    sprintf (buffer, format, myargs);
+    vsprintf (buffer, format, myargs);
     add_word (buffer);
 
     /* Clean up the va_list */
@@ -5997,7 +5994,7 @@ void execute_string(const char *format, ...) {
   va_start(myargs, format);
 
   /* Forward the '...' to vprintf */
-  sprintf(temp_string, format, myargs);
+  vsprintf(temp_string, format, myargs);
 
   /* Clean up the va_list */
   va_end(myargs);
