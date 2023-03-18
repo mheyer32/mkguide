@@ -74,6 +74,7 @@
 #include <sys/stat.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <errno.h>
 #if !defined (AMIGA)
 #include <pwd.h>
 #include <unistd.h>
@@ -99,7 +100,7 @@
 
 
 #if defined (__GNUC__)
-#define alloca __builtin_alloca
+//#define alloca __builtin_alloca
 #else
 #if defined (sparc)
 #include <alloca.h>
@@ -551,10 +552,33 @@ int cm_macro (), cm_unmacro ();
 int cm_paragraphindent (), cm_footnotestyle ();
 
 /* Internals. */
-void do_nothing ();
+int do_nothing ();
 int command_name_condition ();
-void misplaced_brace ();
+int misplaced_brace();
 int cm_obsolete ();
+void usage ();
+void push_node_filename ();
+void pop_node_filename ();
+void convert (char *name);
+void init_internals ();
+void init_paragraph ();
+void init_brace_stack ();
+void reader_loop ();
+void read_command ();
+void init_brace_stack ();
+void remember_brace (FUNCTION *proc);
+void remember_brace_1 (FUNCTION *proc, int position);
+int  pop_and_call_brace ();
+void discard_braces ();
+void add_word (char *string);
+void add_char (int character);
+void insert (int character);
+void kill_self_indent (int count);
+void inhibit_output_flushing ();
+void uninhibit_output_flushing ();
+void flush_output ();
+void close_single_paragraph ();
+void close_insertion_paragraph ();
 
 typedef struct
   {
@@ -1308,7 +1332,7 @@ pathname_part (char *filename)
 
 /* Return the expansion of FILENAME. */
 char *
-expand_filename (char *filename, char **input_name)
+expand_filename (char *filename, char *input_name)
 {
   char *full_pathname ();
 
@@ -1945,7 +1969,7 @@ finished:
       free_pending_notes ();
       if (tag_table != NULL)
 	{
-	  tag_table = (TAG_ENTRY *) reverse_list (tag_table);
+          tag_table = (TAG_ENTRY *) reverse_list ((GENERIC_LIST*)tag_table);
 	  if (!no_headers && !amiga_guide)
 	    write_tag_table ();
 	}
@@ -1970,12 +1994,12 @@ finished:
     }
 }
 
-void free_and_clear (char **pointer)
+void free_and_clear (void **pointer)
 {
-  if ((*pointer) != (char *) NULL)
+  if ((*pointer) != NULL)
     {
       free (*pointer);
-      *pointer = (char *) NULL;
+      *pointer = NULL;
     }
 }
 
@@ -2239,7 +2263,7 @@ void remember_brace_1 (FUNCTION *proc, int position)
 
 /* Pop the top of the brace stack, and call the associated function
    with the args END and POS. */
-void pop_and_call_brace ()
+int pop_and_call_brace ()
 {
   BRACE_ELEMENT *temp;
   FUNCTION *proc;
@@ -3066,8 +3090,9 @@ find_type_from_name (char *name)
   return (bad_type);
 }
 
-void do_nothing ()
+int do_nothing ()
 {
+    return 0;
 }
 
 int
@@ -3522,14 +3547,14 @@ cm_today (int arg)
     }
 }
 
-cm_code (int arg)
+int cm_code (int arg)
 {
   extern int printing_index;
 
   /* If we are printing an index, or we are in an AmigaGuide button,
      simply return */
   if (in_amiga_guide_button || printing_index)
-    return;
+    return 0;
 
 
   if (arg == START)
@@ -3597,7 +3622,7 @@ cm_sc (int arg, int start_pos, int end_pos)
 }
 
 /* @var in makeinfo just uppercases the text. */
-cm_var (int arg, int start_pos, int end_pos)
+int cm_var (int arg, int start_pos, int end_pos)
 {
 
   extern int printing_index;
@@ -3617,7 +3642,7 @@ cm_var (int arg, int start_pos, int end_pos)
   else
     {
       if (printing_index)
-	return;
+	return 0;
       if (arg == START)
 	amiga_set_attributes (AMIGA_VAR_ON);
       if (arg == END)
@@ -3625,7 +3650,7 @@ cm_var (int arg, int start_pos, int end_pos)
     }
 }
 
-cm_dfn (int arg, int position)
+int cm_dfn (int arg, int position)
 {
   extern int printing_index;
 
@@ -3634,7 +3659,7 @@ cm_dfn (int arg, int position)
   else
     {
       if (printing_index)
-	return;
+	return 0;
       if (arg == START)
 	amiga_set_attributes (AMIGA_VAR_ON);
       if (arg == END)
@@ -3936,7 +3961,7 @@ cm_top ()
 	      line_error ("Here is the @top node.");
 	      input_filename = old_input_filename;
 	      line_number = old_line_number;
-	      return;
+	      return 0;
 	    }
 	  tag = tag->next_ent;
 	}
@@ -4757,7 +4782,7 @@ void validate_file (     char *filename,
 }
 
 /* Return 1 if tag correctly validated, or 0 if not. */
-void validate (     char *tag,
+int validate (     char *tag,
          int line,
          char *label)
 
@@ -5366,7 +5391,7 @@ int cm_xref (int arg)
 	    }
 	  else
 	    execute_string ("%s: (%s)%s", node_name, arg4, arg1);
-	  return;
+	  return 0;
 	}
       else
 	remember_node_reference (arg1, line_number, followed_reference);
@@ -5412,7 +5437,7 @@ int cm_xref (int arg)
 		execute_string ("%s: %s", arg2, arg1);
 	    }
 
-	  return;
+	  return 0;
 	}
 
 
@@ -5466,7 +5491,7 @@ int cm_xref (int arg)
 
       if (output_paragraph[output_paragraph_offset - 2] == ':' &&
 	  output_paragraph[output_paragraph_offset - 1] == ':')
-	return;
+	return 0;
       while (temp < size_of_input_text)
 	{
 	  if (cr_or_whitespace (input_text[temp]))
@@ -5476,12 +5501,12 @@ int cm_xref (int arg)
 	      if (input_text[temp] == '.' ||
 		  input_text[temp] == ',' ||
 		  input_text[temp] == '\t')
-		return;
+		return 0;
 	      else
 		{
 		  line_error (
 			       "Cross-reference must be terminated with a period or a comma");
-		  return;
+		  return 0;
 		}
 	    }
 	}
@@ -6662,7 +6687,7 @@ cm_defun ()
       line_error ("Must be in a `%s' insertion in order to use `%s'x",
 		  command, command);
       discard_until ("\n");
-      return;
+      return 0;
     }
 
   defun_internal (type, x_p);
@@ -6677,7 +6702,7 @@ cm_end ()
   if (!insertion_level)
     {
       line_error ("Unmatched `@%s'", command);
-      return;
+      return 0 ;
     }
 
   get_rest_of_line (&temp);
@@ -6911,22 +6936,20 @@ cm_infoinclude ()
 
   if (!find_and_load (filename))
     {
-      extern const char * const sys_errlist[];
-      extern int errno, sys_nerr;
+      extern int errno;
       popfile ();
 
       /* Cannot "@include foo", in line 5 of "/wh/bar". */
-      line_error ("`%c%s %s': %s", COMMAND_PREFIX, command, filename,
-		  ((errno < sys_nerr) ?
-		   sys_errlist[errno] : "Unknown file system error"));
+      line_error ("`%c%s %s': %s", COMMAND_PREFIX, command, filename, strerror(errno));
     }
   free (filename);
 }
 
 /* The other side of a malformed expression. */
-void misplaced_brace ()
+int misplaced_brace ()
 {
   line_error ("Misplaced `}'");
+  return 0;
 }
 
 /* Don't let the filling algorithm insert extra whitespace here. */
@@ -7104,7 +7127,7 @@ void free_index (INDEX_ELT *index)
 }
 
 /* Flush an index by name. */
-void undefindex (char *name)
+int undefindex (char *name)
 
 {
   int i;
@@ -7393,7 +7416,7 @@ cm_printindex ()
     {
       line_error ("Unknown index name `%s'", index_name);
       free (index_name);
-      return;
+      return 0;
     }
   else
     {
@@ -7661,7 +7684,7 @@ void free_pending_notes ()
  /* Handle a "footnote".
     footnote *{this is a footnote}
     where "*" is the marker character for this note. */
-cm_footnote ()
+int cm_footnote ()
 {
   char *marker;
   char *note;
@@ -7674,7 +7697,7 @@ cm_footnote ()
     {
       line_error ("`@%s' expected more than just `%s'.  It needs something in `{...}'", command, marker);
       free (marker);
-      return;
+      return 0;
     }
   else
     {
@@ -7687,7 +7710,7 @@ cm_footnote ()
 	  if (temp == size_of_input_text)
 	    {
 	      line_error ("No closing brace for footnote `%s'", marker);
-	      return;
+	      return 0;
 	    }
 
 	  if (input_text[temp] == '{')
@@ -7712,7 +7735,7 @@ cm_footnote ()
       line_error ("Footnote defined without parent node");
       free (marker);
       free (note);
-      return;
+      return 0;
     }
 
   if (!*marker)
