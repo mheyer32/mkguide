@@ -578,6 +578,7 @@ static COMMAND CommandTable[] = {
     {"?", cm_ignore_sentence_ender, NO_BRACE_ARGS},
     {"|", do_nothing, NO_BRACE_ARGS},
     {"@", insert_self, NO_BRACE_ARGS},
+    {"-", insert_self, NO_BRACE_ARGS}, // <<<<<<<<<<<<<<<<< @-
     {" ", insert_self, NO_BRACE_ARGS},
     {"\n", insert_self, NO_BRACE_ARGS},
     {"TeX", cm_TeX, BRACE_ARGS},
@@ -646,11 +647,14 @@ static COMMAND CommandTable[] = {
     {"deftpx", cm_defun, NO_BRACE_ARGS},
     /* The end of the `def' commands. */
 
+    {"detailmenu", cm_menu, NO_BRACE_ARGS},
     {"display", cm_display, NO_BRACE_ARGS},
     {"dots", cm_dots, BRACE_ARGS},
     {"dmn", do_nothing, BRACE_ARGS},
+    {"email", cm_code, BRACE_ARGS},
     {"emph", cm_emph, BRACE_ARGS},
     {"end", cm_end, NO_BRACE_ARGS},
+    {"enddots", cm_dots, BRACE_ARGS},
     {"enumerate", cm_enumerate, NO_BRACE_ARGS},
     {"equiv", cm_equiv, BRACE_ARGS},
     {"error", cm_error, BRACE_ARGS},
@@ -755,6 +759,7 @@ static COMMAND CommandTable[] = {
     {"unnumberedsec", cm_unnumberedsec, NO_BRACE_ARGS},
     {"unnumberedsubsec", cm_unnumberedsubsec, NO_BRACE_ARGS},
     {"unnumberedsubsubsec", cm_unnumberedsubsubsec, NO_BRACE_ARGS},
+    {"url", cm_code, BRACE_ARGS},
     {"value", cm_value, BRACE_ARGS},
     {"var", cm_var, BRACE_ARGS},
     {"vindex", cm_vindex, NO_BRACE_ARGS},
