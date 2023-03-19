@@ -1472,11 +1472,11 @@ void canon_white(char *string) {
 
   for (x = 0; x < len; x++) {
     if (!cr_or_whitespace(string[x])) {
-      strcpy(string, string + x);
+      memmove(string, string + x, len + 1);
       break;
     }
   }
-  len = strlen(string);
+  len -= x;
   if (len) len--;
   while (len > -1 && cr_or_whitespace(string[len])) len--;
   string[len + 1] = '\0';
